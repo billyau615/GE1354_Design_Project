@@ -3,21 +3,18 @@
 ## Overview
 
 ```
-┌─────────────┐     serial/I2C     ┌─────────────┐     WiFi/MQTT     ┌─────────────┐
-│ Micro:bit #1│ ◄──────────────► │    ESP32    │ ◄──────────────► │ MQTT Server │
+┌─────────────┐        UART        ┌─────────────┐     WiFi/MQTT     ┌─────────────┐
+│ Micro:bit #1│ ◄────────────────► │    ESP32    │ ◄──────────────► │ MQTT Server │
 │             │                    │             │                   │             │
 │ - DHT20     │                    └─────────────┘                   └──────┬──────┘
-│ - OLED      │                                                            │
-│ - Buzzer    │                                                            │ MQTT
-│             │                                                            │
-└─────────────┘                                                     ┌──────┴──────┐
-                                                                    │  Web Server │
-┌─────────────┐                                                     │  (Python)   │
-│ Micro:bit #2│                                                     │             │
-│             │                                                     └──────┬──────┘
-│ - Servos    │                                                            │
-│  (dispenser)│                                                            │ HTTP
-└─────────────┘                                                            │
+│ - OLED      │  (main logic here)   (MQTT only)                           │
+│ - Buzzer    │                                                             │ MQTT
+│             │        UART                                                 │
+│             │ ◄────────────────► Micro:bit #2               ┌────────────┴────────┐
+└─────────────┘                    │                           │    Web Server       │
+                                   │ - Servos                 │    (Python)         │
+                                   │  (dispenser)             └────────────┬────────┘
+                                   └─────────────┘                        │ HTTP
                                                                     ┌──────┴──────┐
                                                                     │   Browser   │
                                                                     │   (Web UI)  │
@@ -26,21 +23,22 @@
 
 ## Components
 
-### Micro:bit #1 — Sensors & Display
+### Micro:bit #1 — Main Controller
+- Runs the **main application logic**
 - Reads temperature and humidity from **DHT20** sensor (I2C)
 - Displays status on **OLED** screen (I2C)
 - Drives **passive buzzer** for alerts/notifications
-- Communicates with ESP32 for network connectivity
+- Sends/receives data to/from **ESP32** via UART
+- Sends/receives commands to/from **Micro:bit #2** via UART
 
 ### Micro:bit #2 — Dispensing Mechanism
 - Controls **servo motors** to dispense medication
-- Operates on a separate circuit
-- Communication method with Micro:bit #1: TBD (wireless radio / via ESP32)
+- Communicates with Micro:bit #1 via **UART**
 
-### ESP32 — Network Bridge
+### ESP32 — MQTT Bridge only
 - Connects to WiFi
-- Publishes sensor data and receives commands via **MQTT**
-- Bridges Micro:bit #1 to the network
+- Forwards data between Micro:bit #1 and the MQTT server via **UART ↔ MQTT**
+- Contains no application logic — purely a network bridge
 
 ### Web Server (Python)
 - Hosts the management web UI
@@ -55,6 +53,6 @@
 
 ## Communication Flow
 
-1. **Sensor data flow**: DHT20 → Micro:bit #1 → ESP32 → MQTT → Web Server → Browser
-2. **Dispense command**: Browser → Web Server → MQTT → ESP32 → Micro:bit → Servo
-3. **Alerts**: Micro:bit #1 → Buzzer / OLED (local), and ESP32 → MQTT → Web Server (remote)
+1. **Sensor data flow**: DHT20 → Micro:bit #1 → UART → ESP32 → MQTT → Web Server → Browser
+2. **Dispense command**: Browser → Web Server → MQTT → ESP32 → UART → Micro:bit #1 → UART → Micro:bit #2 → Servo
+3. **Alerts**: Micro:bit #1 → Buzzer / OLED (local), and → ESP32 → MQTT → Web Server (remote)

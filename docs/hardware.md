@@ -8,7 +8,7 @@
 | DHT20 (temp/humidity sensor) | 1 | I2C (addr `0x38`) | Micro:bit #1 |
 | OLED Display (SSD1306, 128x64) | 1 | I2C (addr `0x3C`) | Micro:bit #1 |
 | Passive Buzzer (無源) | 1 | PWM | Micro:bit #1 |
-| ESP32 | 1 | Serial/UART | Micro:bit #1 |
+| ESP32 | 1 | UART | Micro:bit #1 |
 | Servo Motor(s) | TBD | PWM | Micro:bit #2 |
 
 ## Pin Mappings
@@ -26,6 +26,7 @@
 | Pin | Connected To | Notes |
 |---|---|---|
 | TBD | Servo(s) | PWM output |
+| TBD | Micro:bit #1 TX/RX | UART communication |
 
 ### ESP32
 
