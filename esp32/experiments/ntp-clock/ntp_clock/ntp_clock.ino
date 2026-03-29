@@ -42,12 +42,16 @@ void setup() {
     }
     Serial.println(" synced");
 
-    // Send time once to Micro:bit
+    // Send time repeatedly for 5 seconds so Micro:bit doesn't miss it
     char buf[9];
-    strftime(buf, sizeof(buf), "%H:%M:%S", &timeinfo);
-    Serial1.println(buf);
-    Serial.print("Sent to Micro:bit: ");
-    Serial.println(buf);
+    for (int i = 0; i < 10; i++) {
+        getLocalTime(&timeinfo);
+        strftime(buf, sizeof(buf), "%H:%M:%S", &timeinfo);
+        Serial1.println(buf);
+        Serial.print("Sent to Micro:bit: ");
+        Serial.println(buf);
+        delay(500);
+    }
 }
 
 void loop() {

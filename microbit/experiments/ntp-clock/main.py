@@ -10,12 +10,13 @@ init_oled()
 clear_oled()
 write_oled("Waiting NTP...", 0)
 
-# Wait for a single HH:MM:SS line from ESP32
-line = None
-while not line:
+# Wait for a valid HH:MM:SS line from ESP32
+text = ""
+while len(text) != 8 or text[2] != ':' or text[5] != ':':
     line = uart.readline()
+    if line:
+        text = line.decode('utf-8').strip()
 
-text = line.decode('utf-8').strip()
 h = int(text[0:2])
 m = int(text[3:5])
 s = int(text[6:8])
