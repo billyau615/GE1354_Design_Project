@@ -42,18 +42,21 @@ void setup() {
     }
     Serial.println(" synced");
 
-    // Send time repeatedly for 5 seconds so Micro:bit doesn't miss it
-    char buf[9];
-    for (int i = 0; i < 10; i++) {
-        getLocalTime(&timeinfo);
-        strftime(buf, sizeof(buf), "%H:%M:%S", &timeinfo);
-        Serial1.println(buf);
-        Serial.print("Sent to Micro:bit: ");
-        Serial.println(buf);
-        delay(500);
-    }
 }
 
 void loop() {
-    // Micro:bit runs the clock on its own — nothing to do here
+    // Keep sending time every second — Micro:bit takes the first valid line
+    // and ignores the rest once its own clock is running
+    struct tm timeinfo;
+    if (!getLocalTime(&timeinfo)) {
+        delay(1000);
+        return;
+    }
+
+    char buf[9];
+    strftime(buf, sizeof(buf), "%H:%M:%S", &timeinfo);
+    Serial1.println(buf);
+    Serial.println(buf);
+
+    delay(1000);
 }
