@@ -11,11 +11,16 @@ clear_oled()
 write_oled("Waiting NTP...", 0)
 
 # Wait for a valid HH:MM:SS line from ESP32
+buf = b''
 text = ""
 while len(text) != 8 or text[2] != ':' or text[5] != ':':
-    line = uart.readline()
-    if line:
-        text = line.decode('utf-8').strip()
+    if uart.any():
+        chunk = uart.read(1)
+        if chunk:
+            buf += chunk
+            if b'\n' in buf:
+                text = buf.decode('utf-8').strip()
+                buf = b''
 
 h = int(text[0:2])
 m = int(text[3:5])
