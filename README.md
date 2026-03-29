@@ -32,6 +32,7 @@ An automated drug dispensing system built with Micro:bit, ESP32, and a web-based
 
 - [System Architecture](docs/architecture.md)
 - [Hardware & Wiring](docs/hardware.md)
+- [Progress Report](docs/progress-report.md)
 
 ## Experiments
 
