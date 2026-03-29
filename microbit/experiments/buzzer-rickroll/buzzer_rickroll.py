@@ -32,12 +32,11 @@ display.show(Image.MUSIC_QUAVER)
 while True:
     if button_a.was_pressed():
         display.show(Image.HAPPY)
-        # Use pin=pin1 for your buzzers
-        music.play(rickroll_perfect, pin=pin1, wait=True)
+        music.play(rickroll_perfect, pin=pin0, wait=True)
         display.show(Image.MUSIC_QUAVER)
-    
+
     if button_b.was_pressed():
-        music.stop(pin1)
+        music.stop(pin0)
         display.clear()
         
     sleep(100)
