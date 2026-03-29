@@ -17,9 +17,10 @@
 
 | Pin | Connected To | Notes |
 |---|---|---|
-| I2C (pin19/pin20) | DHT20, OLED | Shared I2C bus |
-| pin1 | Passive Buzzer | PWM output |
-| TBD | ESP32 TX/RX | Serial communication |
+| P19 / P20 (I2C) | DHT20, OLED | Shared I2C bus |
+| P0 | Passive Buzzer | PWM output |
+| P16 (TX) | ESP32 GPIO17 (RX) | UART to ESP32 |
+| P8 (RX) | ESP32 GPIO16 (TX) | UART from ESP32 |
 
 ### Micro:bit #2
 
@@ -32,7 +33,8 @@
 
 | Pin | Connected To | Notes |
 |---|---|---|
-| TBD | Micro:bit #1 TX/RX | Serial communication |
+| GPIO17 (RX) | Micro:bit #1 P16 (TX) | UART from Micro:bit |
+| GPIO16 (TX) | Micro:bit #1 P8 (RX) | UART to Micro:bit |
 | WiFi | MQTT Server | Wireless |
 
 ## Circuit Diagrams

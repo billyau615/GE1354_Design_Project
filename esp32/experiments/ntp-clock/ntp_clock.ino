@@ -1,26 +1,22 @@
 // NTP Clock — fetches time and sends to Micro:bit over UART every second.
 //
 // Wiring:
-//   ESP32 GPIO11 (RX) ← Micro:bit P16 (TX)
-//   ESP32 GPIO12 (TX) → Micro:bit P8  (RX)
+//   ESP32 GPIO17 (RX) ← Micro:bit P16 (TX)
+//   ESP32 GPIO16 (TX) → Micro:bit P8  (RX)
 //
-// WARNING: GPIO11 is part of the SPI flash interface on most ESP32 boards.
-// If the board fails to boot or connect, use a different RX pin (e.g. GPIO16)
-// and update MB_RX_PIN below.
-
 #include <WiFi.h>
 #include <time.h>
 
 // ── User configuration ──────────────────────────────────────────────────────
-const char* WIFI_SSID    = "your_ssid";
-const char* WIFI_PASS    = "your_password";
+const char* WIFI_SSID    = "YOUR_WIFI_SSID";
+const char* WIFI_PASS    = "YOUR_WIFI_PASSWORD";
 const char* NTP_SERVER   = "pool.ntp.org";
 const long  GMT_OFFSET   = 8 * 3600;   // UTC+8 (Hong Kong)
 const int   DST_OFFSET   = 0;
 
 // ── Pin configuration ───────────────────────────────────────────────────────
-#define MB_RX_PIN 11   // receives from Micro:bit P16
-#define MB_TX_PIN 12   // sends to Micro:bit P8
+#define MB_RX_PIN 17   // receives from Micro:bit P16
+#define MB_TX_PIN 16   // sends to Micro:bit P8
 
 void setup() {
     Serial.begin(115200);
