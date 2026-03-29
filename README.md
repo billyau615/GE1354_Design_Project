@@ -41,3 +41,4 @@ Small test projects to validate individual components before integration:
 |---|---|
 | [oled-dht20](microbit/experiments/oled-dht20/) | Read DHT20 temperature/humidity and display on OLED |
 | [buzzer-rickroll](microbit/experiments/buzzer-rickroll/) | Play "Never Gonna Give You Up" on a passive buzzer |
+| [ntp-clock](microbit/experiments/ntp-clock/) | Sync time from ESP32 NTP and display datetime on OLED, beep every minute |
