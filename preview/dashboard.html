@@ -182,7 +182,8 @@
 
     function simulateDisconnect() {
       disconnected = true;
-      alert('Disconnect simulated. The connection lost modal will appear after 3 failed polls (~15s).');
+      failCount = MAX_FAILS;
+      connModal.show();
     }
 
     poll();
