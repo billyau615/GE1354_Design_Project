@@ -1,7 +1,5 @@
 # Automated Drug Dispenser
 
-> GE1354 2025-26 Design Project
-
 An automated drug dispensing system built with Micro:bit, ESP32, and a web-based management interface. The system monitors environmental conditions, controls servo-driven dispensing mechanisms, and communicates via MQTT.
 
 ## System Overview
