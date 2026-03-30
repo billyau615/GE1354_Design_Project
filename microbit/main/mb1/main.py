@@ -3,6 +3,7 @@ import radio
 import music
 from oled import init_oled, write_oled, clear_oled
 from dht20 import read_dht20
+from ds3231 import read_ds3231, set_ds3231
 
 # ── UART & Radio init ─────────────────────────────────────────────────────────
 radio.on()
@@ -19,6 +20,8 @@ sensor_timer = 0    # count down to next DHT20 read
 last_humi = None
 last_temp = None
 uart_buf = b''
+rtc_sync_timer = 0
+RTC_SYNC_INTERVAL = 21600   # re-read RTC every 6 hours (6×3600 loop iterations)
 
 # Long-press tracking
 a_pressed_since = 0
@@ -76,6 +79,7 @@ def parse_uart_line(line):
                 h = int(body[0:2])
                 m = int(body[3:5])
                 s = int(body[6:8])
+                set_ds3231(h, m, s)
                 send_uart("TIME_ACK")
             except ValueError:
                 pass
@@ -271,30 +275,39 @@ def check_long_press():
 sleep(2000)
 init_oled()
 clear_oled()
-write_oled("Waiting time...", 0)
 display.show(Image.CLOCK12)
 
-# Block until TIME: received from ESP32
-while True:
-    if uart.any():
-        chunk = uart.read(1)
-        if chunk:
-            uart_buf += chunk
-            if b"\n" in uart_buf:
-                idx = uart_buf.find(b"\n")
-                line = uart_buf[:idx].decode("utf-8", "replace").strip()
-                uart_buf = uart_buf[idx+1:]
-                if line.startswith("TIME:"):
-                    body = line[5:]
-                    if len(body) == 8 and body[2] == ":" and body[5] == ":":
-                        try:
-                            h = int(body[0:2])
-                            m = int(body[3:5])
-                            s = int(body[6:8])
-                            send_uart("TIME_ACK")
-                            break
-                        except ValueError:
-                            pass
+# Try DS3231 first
+h, m, s = read_ds3231()
+
+if h or m or s:
+    # RTC has valid time from a previous NTP sync — use immediately
+    write_oled("RTC {:02d}:{:02d}".format(h, m), 0)
+    send_uart("TIME_ACK")          # stop ESP32 flooding TIME: messages
+else:
+    # RTC unset (first boot or dead battery) — wait for UART time sync
+    write_oled("Waiting time...", 0)
+    while True:
+        if uart.any():
+            chunk = uart.read(1)
+            if chunk:
+                uart_buf += chunk
+                if b"\n" in uart_buf:
+                    idx = uart_buf.find(b"\n")
+                    line = uart_buf[:idx].decode("utf-8", "replace").strip()
+                    uart_buf = uart_buf[idx+1:]
+                    if line.startswith("TIME:"):
+                        body = line[5:]
+                        if len(body) == 8 and body[2] == ":" and body[5] == ":":
+                            try:
+                                h = int(body[0:2])
+                                m = int(body[3:5])
+                                s = int(body[6:8])
+                                set_ds3231(h, m, s)    # persist to RTC
+                                send_uart("TIME_ACK")
+                                break
+                            except ValueError:
+                                pass
 
 # Non-blocking poll for SCHED: (up to 3 seconds)
 for _ in range(300):
@@ -336,6 +349,7 @@ display.clear()
 clear_oled()
 read_sensors()
 sensor_timer = 30
+rtc_sync_timer = RTC_SYNC_INTERVAL
 
 # ── Main loop ─────────────────────────────────────────────────────────────────
 while True:
@@ -349,6 +363,13 @@ while True:
     if sensor_timer <= 0:
         read_sensors()
         sensor_timer = 30
+
+    rtc_sync_timer -= 1
+    if rtc_sync_timer <= 0:
+        rh, rm, rs = read_ds3231()
+        if rh or rm or rs:      # guard: don't overwrite good time with error (0,0,0)
+            h, m, s = rh, rm, rs
+        rtc_sync_timer = RTC_SYNC_INTERVAL
 
     update_oled()
     sleep(1000)
