@@ -13,8 +13,6 @@ The ESP32 fetches the current time over NTP and sends it to the Micro:bit via UA
 | `microbit/oled.py` | SSD1306 OLED driver |
 | `esp32/ds3231_ntp.ino` | ESP32 — connects to WiFi, syncs NTP, sends TIME: to Micro:bit |
 
-> **Note:** The Micro:bit files are at the root of `experiments/ds3231/` (not in a subfolder). Flash `main.py`, `ds3231.py`, and `oled.py` together onto the Micro:bit.
-
 ## Hardware
 
 | Component | Interface | Notes |

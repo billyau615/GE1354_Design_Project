@@ -23,7 +23,7 @@ An automated drug dispensing system built with Micro:bit, ESP32, and a web-based
 │   │   ├── microbit/
 │   │   └── esp32/
 │   └── ds3231/
-│       ├── microbit files (main.py, ds3231.py, oled.py)
+│       ├── microbit/
 │       └── esp32/
 ├── microbit/main/         # Micro:bit integrated code
 │   ├── mb1/               # Micro:bit #1 (main logic)
