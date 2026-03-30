@@ -64,5 +64,5 @@ Full integrated system built across all components:
 - All protocols documented in [docs/main-project.md](main-project.md)
 
 ## Up Next
-- Micro:bit #2 servo motor control (hardware pending)
+- Micro:bit #2 servo motor control (hardware pending); radio link testable now via LED matrix feedback
 - Integration testing: boot sequence, schedule trigger, refill, Telegram alerts
