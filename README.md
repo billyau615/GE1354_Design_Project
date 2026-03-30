@@ -60,3 +60,13 @@ Small test projects to validate individual components before integration:
 | [buzzer-rickroll](experiments/buzzer-rickroll/) | Play "Never Gonna Give You Up" on a passive buzzer |
 | [ntp-clock](experiments/ntp-clock/) | Sync time from ESP32 NTP and display datetime on OLED, beep every minute |
 | [ir-sensor](experiments/ir-sensor/) | FC-51 IR obstacle sensor on P1 triggers buzzer on P0 |
+
+## Web UI Preview
+
+Static HTML mock-ups of the web interface — open directly in a browser, no server required.
+
+| Page | File |
+|---|---|
+| Dashboard | [preview/dashboard.html](preview/dashboard.html) |
+| Schedules | [preview/schedules.html](preview/schedules.html) |
+| Settings | [preview/settings.html](preview/settings.html) |
