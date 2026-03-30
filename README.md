@@ -6,8 +6,8 @@ An automated drug dispensing system built with Micro:bit, ESP32, and a web-based
 
 | Component | Role |
 |---|---|
-| **Micro:bit #1** | Connects to OLED display, passive buzzer, DHT20 sensor, and ESP32 |
-| **Micro:bit #2** | Separate circuit for controlling servo motors |
+| **Micro:bit #1** | Main logic — DHT20 sensor, OLED display, passive buzzer, DS3231 RTC, UART to ESP32, radio to MB2 |
+| **Micro:bit #2** | Servo motor control — receives dispense commands from MB1 via radio |
 | **ESP32** | WiFi connectivity and MQTT communication |
 | **Web Server** | Python backend serving the management UI, bridging MQTT |
 | **MQTT Server** | Message broker between ESP32 and web server |
