@@ -6,7 +6,7 @@
 <div class="row mt-3">
   <div class="col-12"><h5>Storage</h5></div>
   {% for label, key in [("Type A", "a"), ("Type B", "b")] %}
-  <div class="col-md-3 col-6 mb-3">
+  <div class="col-6 col-md-3 mb-3">
     <div class="card text-center p-3">
       <div class="fw-bold">{{ label }}</div>
       <div class="display-6 {% if storage[key] == 0 %}empty{% endif %}">
@@ -15,7 +15,7 @@
       {% if storage[key] == 0 %}
       <small class="text-danger">Empty — please refill</small>
       {% endif %}
-      <button class="btn btn-sm btn-outline-primary mt-2"
+      <button class="btn btn-sm btn-outline-primary mt-2 w-100"
               onclick="dispense('{{ key|upper }}')">Dispense {{ label }}</button>
     </div>
   </div>
@@ -24,24 +24,24 @@
 
 <!-- Sensor -->
 <div class="row mt-2">
-  <div class="col-12 d-flex align-items-center gap-2">
+  <div class="col-12 d-flex flex-wrap align-items-center gap-2 mb-2">
     <h5 class="mb-0">Environment</h5>
     <button class="btn btn-sm btn-outline-secondary" onclick="reloadSensor()">Reload</button>
     <small class="text-muted" id="sensor-updated">
       {% if sensor.updated %}Last updated: {{ sensor.updated }}{% else %}Not yet received{% endif %}
     </small>
   </div>
-  <div class="col-md-2 col-4 mt-2">
+  <div class="col-6 col-md-2 mt-1">
     <div class="card text-center p-3">
-      <div class="text-muted">Temperature</div>
+      <div class="text-muted small">Temperature</div>
       <div class="fs-4" id="sensor-temp">
         {% if sensor.temp is not none %}{{ sensor.temp }}°C{% else %}—{% endif %}
       </div>
     </div>
   </div>
-  <div class="col-md-2 col-4 mt-2">
+  <div class="col-6 col-md-2 mt-1">
     <div class="card text-center p-3">
-      <div class="text-muted">Humidity</div>
+      <div class="text-muted small">Humidity</div>
       <div class="fs-4" id="sensor-humi">
         {% if sensor.humidity is not none %}{{ sensor.humidity }}%{% else %}—{% endif %}
       </div>
@@ -58,14 +58,16 @@
       {% endif %}
     </h5>
     {% if schedules %}
-    <table class="table table-sm table-bordered w-auto">
-      <thead><tr><th>Time</th><th>Type</th></tr></thead>
-      <tbody>
-        {% for s in schedules %}
-        <tr><td>{{ s.time }}</td><td>{{ s.type }}</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="table-responsive">
+      <table class="table table-sm table-bordered">
+        <thead><tr><th>Time</th><th>Type</th></tr></thead>
+        <tbody>
+          {% for s in schedules %}
+          <tr><td>{{ s.time }}</td><td>{{ s.type }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
     {% else %}
     <p class="text-muted">No schedules set. <a href="/schedules">Add one</a>.</p>
     {% endif %}

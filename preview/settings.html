@@ -10,8 +10,6 @@
     .card { border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.07); }
     .preview-banner { background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px;
                       padding: .5rem 1rem; font-size: .85rem; color: #856404; margin-bottom: 1.25rem; }
-    .section-divider { font-size: .8rem; font-weight: 600; text-transform: uppercase;
-                       letter-spacing: .08em; color: #6c757d; margin: 1.5rem 0 .75rem; }
     .saved-toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999; min-width: 200px; }
   </style>
 </head>
@@ -19,10 +17,17 @@
   <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
     <div class="container">
       <a class="navbar-brand fw-semibold" href="dashboard.html">💊 Drug Dispenser</a>
-      <div class="navbar-nav ms-auto">
-        <a class="nav-link" href="dashboard.html">Dashboard</a>
-        <a class="nav-link" href="schedules.html">Schedules</a>
-        <a class="nav-link active" href="settings.html">Settings</a>
+      <button class="navbar-toggler" type="button"
+              data-bs-toggle="collapse" data-bs-target="#navMenu"
+              aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="schedules.html">Schedules</a></li>
+          <li class="nav-item"><a class="nav-link active" href="settings.html">Settings</a></li>
+        </ul>
       </div>
     </div>
   </nav>
@@ -36,21 +41,18 @@
     <p class="text-muted small mb-3">Configure Telegram notifications and sensor alert thresholds.</p>
 
     <form onsubmit="showSaved(event)">
-
       <!-- Telegram -->
       <div class="card p-3 mb-3">
-        <p class="section-divider mt-0">Telegram Notifications</p>
-
+        <h6 class="mb-3">Telegram Notifications</h6>
         <div class="mb-3">
           <label class="form-label">Bot Token</label>
           <input type="password" class="form-control" placeholder="Leave blank to keep existing token"
                  autocomplete="off">
           <div class="form-text">
-            Get a token from <a href="https://t.me/BotFather" target="_blank">@BotFather</a> on Telegram.
+            Get a token from <a href="https://t.me/BotFather" target="_blank">@BotFather</a>.
             Leave blank to keep the current token.
           </div>
         </div>
-
         <div class="mb-0">
           <label class="form-label">Your Telegram User ID</label>
           <input type="text" class="form-control" value="123456789" placeholder="e.g. 123456789">
@@ -62,9 +64,8 @@
 
       <!-- Thresholds -->
       <div class="card p-3 mb-4">
-        <p class="section-divider mt-0">Alert Thresholds</p>
-        <p class="text-muted small">A Telegram alert is sent when readings exceed these values (5-minute cooldown).</p>
-
+        <h6 class="mb-1">Alert Thresholds</h6>
+        <p class="text-muted small mb-3">Telegram alert sent when readings exceed these values (5-min cooldown).</p>
         <div class="row g-3">
           <div class="col-6">
             <label class="form-label">Temperature (°C)</label>
@@ -83,8 +84,7 @@
         </div>
       </div>
 
-      <button type="submit" class="btn btn-primary px-4">Save</button>
-      <a href="dashboard.html" class="btn btn-outline-secondary ms-2">Cancel</a>
+      <button type="submit" class="btn btn-primary w-100">Save</button>
     </form>
   </div>
 
@@ -102,8 +102,7 @@
   <script>
     function showSaved(e) {
       e.preventDefault();
-      const toast = new bootstrap.Toast(document.getElementById('saved-toast'), { delay: 2500 });
-      toast.show();
+      new bootstrap.Toast(document.getElementById('saved-toast'), { delay: 2500 }).show();
     }
   </script>
 </body>

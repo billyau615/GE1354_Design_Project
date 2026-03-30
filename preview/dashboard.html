@@ -15,7 +15,6 @@
     .pill-bar-fill { height: 100%; border-radius: 5px; transition: width .4s; }
     .section-title { font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
                      letter-spacing: .08em; color: #6c757d; margin-bottom: .75rem; }
-    .badge-next { font-size: .8rem; }
     .preview-banner { background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px;
                       padding: .5rem 1rem; font-size: .85rem; color: #856404; margin-bottom: 1.25rem; }
   </style>
@@ -24,10 +23,17 @@
   <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
     <div class="container">
       <a class="navbar-brand fw-semibold" href="dashboard.html">💊 Drug Dispenser</a>
-      <div class="navbar-nav ms-auto">
-        <a class="nav-link active" href="dashboard.html">Dashboard</a>
-        <a class="nav-link" href="schedules.html">Schedules</a>
-        <a class="nav-link" href="settings.html">Settings</a>
+      <button class="navbar-toggler" type="button"
+              data-bs-toggle="collapse" data-bs-target="#navMenu"
+              aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link active" href="dashboard.html">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="schedules.html">Schedules</a></li>
+          <li class="nav-item"><a class="nav-link" href="settings.html">Settings</a></li>
+        </ul>
       </div>
     </div>
   </nav>
@@ -42,7 +48,7 @@
     <!-- Storage -->
     <p class="section-title">Storage</p>
     <div class="row g-3 mb-4">
-      <div class="col-md-4 col-6">
+      <div class="col-6 col-md-3">
         <div class="card p-3">
           <div class="storage-label mb-1">Type A</div>
           <div class="storage-count text-success">5 <span class="fs-5 text-muted fw-normal">/ 7</span></div>
@@ -53,7 +59,7 @@
                   onclick="alert('Dispense Type A — preview only')">Dispense A</button>
         </div>
       </div>
-      <div class="col-md-4 col-6">
+      <div class="col-6 col-md-3">
         <div class="card p-3">
           <div class="storage-label mb-1">Type B</div>
           <div class="storage-count text-warning">1 <span class="fs-5 text-muted fw-normal">/ 7</span></div>
@@ -68,22 +74,22 @@
     </div>
 
     <!-- Environment -->
-    <p class="section-title">
+    <p class="section-title d-flex flex-wrap align-items-center gap-2">
       Environment
-      <button class="btn btn-sm btn-outline-secondary ms-2" style="font-size:.75rem;padding:1px 8px"
+      <button class="btn btn-sm btn-outline-secondary" style="font-size:.75rem;padding:1px 8px"
               onclick="alert('Reload — preview only')">Reload</button>
       <span class="text-muted fw-normal" style="font-size:.8rem;text-transform:none;letter-spacing:0">
         Last updated: 14:22:05
       </span>
     </p>
     <div class="row g-3 mb-4">
-      <div class="col-md-2 col-4">
+      <div class="col-6 col-md-2">
         <div class="card p-3 text-center">
           <div class="text-muted small">Temperature</div>
           <div class="sensor-val text-danger">28.4°C</div>
         </div>
       </div>
-      <div class="col-md-2 col-4">
+      <div class="col-6 col-md-2">
         <div class="card p-3 text-center">
           <div class="text-muted small">Humidity</div>
           <div class="sensor-val text-info">62.1%</div>
@@ -94,16 +100,18 @@
     <!-- Schedules -->
     <p class="section-title">
       Upcoming Schedules
-      <span class="badge bg-info text-dark badge-next ms-1">Next in 01:38</span>
+      <span class="badge bg-info text-dark ms-1">Next in 01:38</span>
     </p>
-    <table class="table table-sm table-bordered bg-white" style="max-width:360px">
-      <thead class="table-light"><tr><th>Time</th><th>Type</th></tr></thead>
-      <tbody>
-        <tr><td>08:00</td><td>Type A</td></tr>
-        <tr class="table-warning fw-semibold"><td>14:30 ← next</td><td>A + B</td></tr>
-        <tr><td>20:00</td><td>Type B</td></tr>
-      </tbody>
-    </table>
+    <div class="table-responsive">
+      <table class="table table-sm table-bordered bg-white">
+        <thead class="table-light"><tr><th>Time</th><th>Type</th></tr></thead>
+        <tbody>
+          <tr><td>08:00</td><td>Type A</td></tr>
+          <tr class="table-warning fw-semibold"><td>14:30 ← next</td><td>A + B</td></tr>
+          <tr><td>20:00</td><td>Type B</td></tr>
+        </tbody>
+      </table>
+    </div>
     <a href="schedules.html" class="btn btn-sm btn-outline-secondary">Manage schedules →</a>
   </div>
 

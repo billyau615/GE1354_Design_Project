@@ -12,17 +12,23 @@
                      letter-spacing: .08em; color: #6c757d; margin-bottom: .75rem; }
     .preview-banner { background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px;
                       padding: .5rem 1rem; font-size: .85rem; color: #856404; margin-bottom: 1.25rem; }
-    .slot-badge { font-size: .75rem; }
   </style>
 </head>
 <body>
   <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
     <div class="container">
       <a class="navbar-brand fw-semibold" href="dashboard.html">💊 Drug Dispenser</a>
-      <div class="navbar-nav ms-auto">
-        <a class="nav-link" href="dashboard.html">Dashboard</a>
-        <a class="nav-link active" href="schedules.html">Schedules</a>
-        <a class="nav-link" href="settings.html">Settings</a>
+      <button class="navbar-toggler" type="button"
+              data-bs-toggle="collapse" data-bs-target="#navMenu"
+              aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link active" href="schedules.html">Schedules</a></li>
+          <li class="nav-item"><a class="nav-link" href="settings.html">Settings</a></li>
+        </ul>
       </div>
     </div>
   </nav>
@@ -32,15 +38,15 @@
       ⚠️ <strong>Preview only</strong> — static mock-up. Add / Delete buttons do not save.
     </div>
 
-    <div class="d-flex align-items-center gap-3 mb-3">
+    <div class="d-flex align-items-center gap-3 mb-2">
       <h4 class="mb-0">Schedules</h4>
-      <span class="badge bg-secondary slot-badge" id="slot-count">3 / 6 slots used</span>
+      <span class="badge bg-secondary" id="slot-count">3 / 6 slots used</span>
     </div>
-    <p class="text-muted small">Up to 6 medication times. When a schedule fires, selected type(s) are dispensed and the alarm sounds.</p>
+    <p class="text-muted small mb-3">Up to 6 medication times. When a schedule fires, selected type(s) are dispensed and the alarm sounds.</p>
 
     <!-- Schedule list -->
-    <div class="card mb-4">
-      <table class="table table-sm mb-0" id="sched-table">
+    <div class="table-responsive mb-4">
+      <table class="table table-bordered mb-0 bg-white" id="sched-table" style="border-radius:12px;overflow:hidden">
         <thead class="table-light">
           <tr><th>#</th><th>Time</th><th>Type</th><th></th></tr>
         </thead>
@@ -67,12 +73,12 @@
     <!-- Add form -->
     <div class="card p-3" id="add-form">
       <h6 class="mb-3">Add Schedule</h6>
-      <div class="row g-2 align-items-end">
-        <div class="col-auto">
+      <div class="row g-2">
+        <div class="col-12 col-sm-auto">
           <label class="form-label small">Time</label>
           <input type="time" id="new-time" class="form-control">
         </div>
-        <div class="col-auto">
+        <div class="col-12 col-sm-auto">
           <label class="form-label small">Type</label>
           <select id="new-type" class="form-select">
             <option value="A">Type A</option>
@@ -80,8 +86,8 @@
             <option value="AB">Both (A + B)</option>
           </select>
         </div>
-        <div class="col-auto">
-          <button class="btn btn-primary" onclick="addRow()">Add</button>
+        <div class="col-12 col-sm-auto d-flex align-items-end">
+          <button class="btn btn-primary w-100" onclick="addRow()">Add</button>
         </div>
       </div>
     </div>
@@ -114,21 +120,15 @@
       const time = document.getElementById('new-time').value;
       const type = document.getElementById('new-type').value;
       if (!time) { alert('Please select a time'); return; }
-      const rows = document.querySelectorAll('#sched-body tr');
-      if (rows.length >= 6) return;
+      if (document.querySelectorAll('#sched-body tr').length >= 6) return;
       const tr = document.createElement('tr');
       tr.innerHTML = `<td></td><td>${time}</td>
         <td><span class="badge ${typeBadge[type]}">${typeLabel[type]}</span></td>
         <td><button class="btn btn-sm btn-outline-danger" onclick="deleteRow(this)">Delete</button></td>`;
-      // insert in time order
       const tbody = document.getElementById('sched-body');
       let inserted = false;
       for (const row of tbody.rows) {
-        if (row.cells[1].textContent > time) {
-          tbody.insertBefore(tr, row);
-          inserted = true;
-          break;
-        }
+        if (row.cells[1].textContent > time) { tbody.insertBefore(tr, row); inserted = true; break; }
       }
       if (!inserted) tbody.appendChild(tr);
       renumber();
