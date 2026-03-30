@@ -17,15 +17,19 @@ An automated drug dispensing system built with Micro:bit, ESP32, and a web-based
 ## Repository Structure
 
 ```
-├── microbit/              # Micro:bit Python code
-│   ├── experiments/       # Small test projects for individual components
-│   └── main/              # Final integrated code (coming soon)
-├── esp32/                 # ESP32 Arduino (C++) code
+├── experiments/           # Standalone test projects for individual components
+│   ├── oled-dht20/
+│   ├── buzzer-rickroll/
+│   ├── ir-sensor/
+│   └── ntp-clock/
+│       ├── microbit/
+│       └── esp32/
+├── microbit/main/         # Micro:bit integrated code
+│   ├── mb1/               # Micro:bit #1 (main logic)
+│   └── mb2/               # Micro:bit #2 (servo, stub)
+├── esp32/main/            # ESP32 Arduino firmware
 ├── server/                # Python web server + MQTT bridge
-├── docs/                  # Project documentation
-│   ├── architecture.md    # System architecture & communication flow
-│   └── hardware.md        # Wiring, components, and circuit info
-└── Design Project Instruction.pdf
+└── docs/                  # Project documentation
 ```
 
 ## Documentation
@@ -39,9 +43,9 @@ An automated drug dispensing system built with Micro:bit, ESP32, and a web-based
 
 | File | Description |
 |---|---|
-| [microbit/main/main.py](microbit/main/main.py) | Micro:bit #1 — main dispenser logic |
-| [microbit/main/mb2_main.py](microbit/main/mb2_main.py) | Micro:bit #2 — servo actuator (stub) |
-| [esp32/main/main/main.ino](esp32/main/main/main.ino) | ESP32 — WiFi + NTP + MQTT + UART bridge |
+| [microbit/main/mb1/main.py](microbit/main/mb1/main.py) | Micro:bit #1 — main dispenser logic |
+| [microbit/main/mb2/main.py](microbit/main/mb2/main.py) | Micro:bit #2 — servo actuator (stub) |
+| [esp32/main/main.ino](esp32/main/main.ino) | ESP32 — WiFi + NTP + MQTT + UART bridge |
 | [server/app.py](server/app.py) | Web server — Flask routes |
 | [server/mqtt_bridge.py](server/mqtt_bridge.py) | MQTT background thread |
 | [server/telegram.py](server/telegram.py) | Telegram alert helper |
