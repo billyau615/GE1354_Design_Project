@@ -21,8 +21,43 @@
 - Passive buzzer (P0, PWM)
 - ESP32 ↔ Micro:bit UART (ESP32 GPIO16/17 ↔ Micro:bit P8/P16)
 
+---
+
+## 30 March 2026 — Draft 1
+
+### New Experiment
+- FC-51 IR obstacle sensor on P1 triggers buzzer on P0
+
+### Main Project — Draft 1 Complete
+
+Full integrated system built across all components:
+
+**Micro:bit #1** (`microbit/main/main.py`)
+- NTP time sync from ESP32 on boot, independent software clock thereafter
+- Reads DHT20 every 30s; displays live on OLED (time / humidity+temp / next schedule countdown)
+- Checks up to 6 medication schedules per minute; triggers alarm and dispense on match
+- Long-press A/B to enter refill mode; LED matrix shows slot count; press to advance
+- Storage counts initialised from ESP32 NVS on boot; synced back on every change
+
+**ESP32** (`esp32/main/main/main.ino`)
+- WiFi + NTP; sends `TIME:` to MB1 every second until acknowledged
+- Persistent storage counts in NVS (Preferences library); restored after power loss
+- MQTT bridge: relays sensor/storage/dispense data MB1 → broker, and commands broker → MB1
+- Subscribes to retained `dispenser/schedules`; reformats and pushes to MB1 on connect
+
+**Web Server** (`server/`)
+- Flask app on `127.0.0.1:5000`, reverse-proxy ready
+- Dashboard: storage (A/B), environment sensor with reload, upcoming schedules, manual dispense
+- Schedule management: add/delete up to 6 schedules; pushed to MQTT (retained)
+- Settings: Telegram bot token, UID, temp/humidity alert thresholds
+- Telegram alerts: storage empty (immediately), threshold exceeded (5-min cooldown)
+
+### Design Decisions
+- MB1 ↔ MB2 uses **radio** (built-in 2.4GHz, group 42) — UART already occupied by ESP32
+- Servo control (MB2) is **stubbed** pending servo hardware
+- All protocols documented in [docs/main-project.md](main-project.md)
+
 ## Up Next
-- Micro:bit #2 servo motor control
-- ESP32 MQTT integration
-- Python web server and management UI
-- Full system integration
+- Micro:bit #2 servo motor control (hardware pending)
+- Integration testing: boot sequence, schedule trigger, refill, Telegram alerts
+- Possible: NTP re-sync every few hours to correct clock drift
