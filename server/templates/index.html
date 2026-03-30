@@ -1,5 +1,23 @@
 {% extends "base.html" %}
 {% block content %}
+
+<!-- Connection lost modal -->
+<div class="modal fade" id="connModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-danger">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">Connection Lost</h5>
+      </div>
+      <div class="modal-body">
+        Unable to reach the server after several attempts. Check your connection and refresh the page.
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger w-100" onclick="window.location.reload()">Refresh Page</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <h2 class="mt-4">Dashboard</h2>
 
 <!-- Storage -->
@@ -9,12 +27,21 @@
   <div class="col-6 col-md-3 mb-3">
     <div class="card text-center p-3">
       <div class="fw-bold">{{ label }}</div>
-      <div class="display-6 {% if storage[key] == 0 %}empty{% endif %}">
-        {{ storage[key] }} / 7
+      <div class="display-6" id="storage-count-{{ key }}">{{ storage[key] }} / 7</div>
+      <div class="pill-bar">
+        <div class="pill-bar-fill" id="storage-bar-{{ key }}"
+             style="width:{{ (storage[key] / 7 * 100)|int }}%;
+                    background-color:{% if storage[key] == 0 %}#dc3545{% elif storage[key] <= 2 %}#ffc107{% else %}#198754{% endif %}">
+        </div>
       </div>
-      {% if storage[key] == 0 %}
-      <small class="text-danger">Empty — please refill</small>
-      {% endif %}
+      <small id="storage-warn-{{ key }}" class="mt-1
+        {% if storage[key] == 0 %}text-danger
+        {% elif storage[key] <= 2 %}text-warning
+        {% else %}invisible{% endif %}">
+        {% if storage[key] == 0 %}Empty — please refill
+        {% elif storage[key] <= 2 %}Low — refill soon
+        {% else %}&nbsp;{% endif %}
+      </small>
       <button class="btn btn-sm btn-outline-primary mt-2 w-100"
               onclick="dispense('{{ key|upper }}')">Dispense {{ label }}</button>
     </div>
@@ -26,7 +53,6 @@
 <div class="row mt-2">
   <div class="col-12 d-flex flex-wrap align-items-center gap-2 mb-2">
     <h5 class="mb-0">Environment</h5>
-    <button class="btn btn-sm btn-outline-secondary" onclick="reloadSensor()">Reload</button>
     <small class="text-muted" id="sensor-updated">
       {% if sensor.updated %}Last updated: {{ sensor.updated }}{% else %}Not yet received{% endif %}
     </small>
@@ -77,6 +103,51 @@
 
 {% block scripts %}
 <script>
+const connModal = new bootstrap.Modal(document.getElementById('connModal'));
+let failCount = 0;
+const MAX_FAILS = 3;
+
+function setStorage(key, count) {
+  const pct = Math.round(count / 7 * 100);
+  const color = count === 0 ? '#dc3545' : count <= 2 ? '#ffc107' : '#198754';
+  const textClass = count === 0 ? 'text-danger' : count <= 2 ? 'text-warning' : 'invisible';
+  const warnText = count === 0 ? 'Empty — please refill' : count <= 2 ? 'Low — refill soon' : '\u00a0';
+
+  document.getElementById('storage-count-' + key).textContent = count + ' / 7';
+  const bar = document.getElementById('storage-bar-' + key);
+  bar.style.width = pct + '%';
+  bar.style.backgroundColor = color;
+  const warn = document.getElementById('storage-warn-' + key);
+  warn.className = 'mt-1 ' + textClass;
+  warn.textContent = warnText;
+}
+
+function setSensor(data) {
+  document.getElementById('sensor-temp').textContent = data.temp !== null ? data.temp + '°C' : '—';
+  document.getElementById('sensor-humi').textContent = data.humidity !== null ? data.humidity + '%' : '—';
+  document.getElementById('sensor-updated').textContent = data.updated ? 'Last updated: ' + data.updated : 'Not yet received';
+}
+
+async function poll() {
+  try {
+    const [sRes, envRes] = await Promise.all([
+      fetch('/api/storage'),
+      fetch('/api/sensor')
+    ]);
+    if (!sRes.ok || !envRes.ok) throw new Error();
+    const storage = await sRes.json();
+    const sensor  = await envRes.json();
+
+    setStorage('a', storage.a);
+    setStorage('b', storage.b);
+    setSensor(sensor);
+    failCount = 0;
+  } catch (_) {
+    failCount++;
+    if (failCount >= MAX_FAILS) connModal.show();
+  }
+}
+
 async function dispense(type) {
   if (!confirm('Dispense type ' + type + '?')) return;
   const res = await fetch('/dispense', {
@@ -85,15 +156,13 @@ async function dispense(type) {
     body: JSON.stringify({type})
   });
   const data = await res.json();
-  if (data.ok) alert('Dispense command sent for type ' + type);
+  if (data.ok) {
+    alert('Dispense command sent for type ' + type);
+    poll(); // immediately refresh counts
+  }
 }
 
-async function reloadSensor() {
-  const res = await fetch('/api/sensor');
-  const data = await res.json();
-  document.getElementById('sensor-temp').textContent = data.temp !== null ? data.temp + '°C' : '—';
-  document.getElementById('sensor-humi').textContent = data.humidity !== null ? data.humidity + '%' : '—';
-  document.getElementById('sensor-updated').textContent = data.updated ? 'Last updated: ' + data.updated : 'Not yet received';
-}
+poll();
+setInterval(poll, 5000);
 </script>
 {% endblock %}
