@@ -1,6 +1,6 @@
 # Main Project Design
 
-> Draft 1 — 30 March 2026
+> Last updated: 30 March 2026
 
 This document covers the design decisions, protocols, and file structure for the integrated drug dispenser system.
 
@@ -22,12 +22,15 @@ Micro:bit #1 ──radio──► Micro:bit #2  (deferred — servo control)
 
 ```
 microbit/main/
-├── main.py         — Micro:bit #1: dispenser logic, OLED, DHT20, buzzer, radio
-├── oled.py         — SSD1306 driver (copied from experiments)
-├── dht20.py        — DHT20 driver (copied from experiments)
-└── mb2_main.py     — Micro:bit #2: radio listener + servo stub
+├── mb1/
+│   ├── main.py     — Micro:bit #1: dispenser logic, OLED, DHT20, buzzer, radio
+│   ├── oled.py     — SSD1306 driver
+│   ├── dht20.py    — DHT20 driver
+│   └── ds3231.py   — DS3231 RTC driver
+└── mb2/
+    └── main.py     — Micro:bit #2: radio listener + servo stub
 
-esp32/main/main/
+esp32/main/
 └── main.ino        — WiFi + NTP + MQTT + UART bridge
 
 server/
@@ -123,8 +126,14 @@ All messages are newline-terminated ASCII.
   - 5-minute cooldown per category to avoid flooding
 - Bot token and Telegram UID configured in Settings page
 
+### Timekeeping (MB1)
+- On every boot, MB1 waits for ESP32 to send `TIME:HH:MM:SS` (NTP-sourced), writes it to the DS3231 RTC over I2C, then replies `TIME_ACK`
+- Main loop reads DS3231 every second — no software clock is maintained
+- DS3231 TCXO accuracy: ±2ppm (≈5s/month), eliminating the ~1–2s/hour drift of a software counter
+- DS3231 battery backup (CR2032) retains time across power loss; NTP re-sync on next boot restores accuracy
+
 ### OLED display (MB1)
-- Line 0: `HH:MM:SS` (live clock)
+- Line 0: `HH:MM:SS` (read from DS3231 every second)
 - Line 1: `H:60.5% T:25.1C`
 - Line 2: `Next:02:15` (countdown to next schedule, or `No sched`)
 
@@ -134,8 +143,8 @@ All messages are newline-terminated ASCII.
 
 | File | Key | Value |
 |---|---|---|
-| `esp32/main/main/main.ino` | `WIFI_SSID` / `WIFI_PASS` | Your WiFi credentials |
-| `esp32/main/main/main.ino` | `MQTT_HOST` / `MQTT_PORT` | Mosquitto broker address |
+| `esp32/main/main.ino` | `WIFI_SSID` / `WIFI_PASS` | Your WiFi credentials |
+| `esp32/main/main.ino` | `MQTT_HOST` / `MQTT_PORT` | Mosquitto broker address |
 | Settings page (web UI) | Bot Token | Telegram bot token from @BotFather |
 | Settings page (web UI) | Telegram UID | Your Telegram user ID (from @userinfobot) |
 
@@ -161,9 +170,7 @@ Install via Arduino IDE → Library Manager:
 
 ---
 
-## Known Limitations (Draft 1)
+## Known Limitations
 
 - Servo control (MB2) is stubbed — dispense command is sent via radio but no physical movement yet
-- Web UI countdown on dashboard does not auto-refresh (manual reload needed)
-- MB1 clock drifts ~1–2s/hour in software; NTP re-sync not yet implemented
 - No authentication on the web UI
