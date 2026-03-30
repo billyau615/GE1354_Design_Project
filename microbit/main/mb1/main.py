@@ -20,8 +20,7 @@ sensor_timer = 0    # count down to next DHT20 read
 last_humi = None
 last_temp = None
 uart_buf = b''
-rtc_sync_timer = 0
-RTC_SYNC_INTERVAL = 21600   # re-read RTC every 6 hours (6×3600 loop iterations)
+prev_m = -1
 
 # Long-press tracking
 a_pressed_since = 0
@@ -32,21 +31,6 @@ LONG_PRESS_MS = 1000
 
 def send_uart(msg):
     uart.write(msg + "\n")
-
-def tick_clock():
-    global h, m, s, dispensed_this_minute
-    s += 1
-    if s >= 60:
-        s = 0
-        m += 1
-        dispensed_this_minute = False
-        if m >= 60:
-            m = 0
-            h += 1
-            if h >= 24:
-                h = 0
-        return True
-    return False
 
 def parse_sched_line(line):
     # "SCHED:14:30:A,15:00:B,16:00:AB"
@@ -277,37 +261,29 @@ init_oled()
 clear_oled()
 display.show(Image.CLOCK12)
 
-# Try DS3231 first
-h, m, s = read_ds3231()
-
-if h or m or s:
-    # RTC has valid time from a previous NTP sync — use immediately
-    write_oled("RTC {:02d}:{:02d}".format(h, m), 0)
-    send_uart("TIME_ACK")          # stop ESP32 flooding TIME: messages
-else:
-    # RTC unset (first boot or dead battery) — wait for UART time sync
-    write_oled("Waiting time...", 0)
-    while True:
-        if uart.any():
-            chunk = uart.read(1)
-            if chunk:
-                uart_buf += chunk
-                if b"\n" in uart_buf:
-                    idx = uart_buf.find(b"\n")
-                    line = uart_buf[:idx].decode("utf-8", "replace").strip()
-                    uart_buf = uart_buf[idx+1:]
-                    if line.startswith("TIME:"):
-                        body = line[5:]
-                        if len(body) == 8 and body[2] == ":" and body[5] == ":":
-                            try:
-                                h = int(body[0:2])
-                                m = int(body[3:5])
-                                s = int(body[6:8])
-                                set_ds3231(h, m, s)    # persist to RTC
-                                send_uart("TIME_ACK")
-                                break
-                            except ValueError:
-                                pass
+# Always sync DS3231 from ESP32 NTP on every boot
+write_oled("Waiting NTP...", 0)
+while True:
+    if uart.any():
+        chunk = uart.read(1)
+        if chunk:
+            uart_buf += chunk
+            if b"\n" in uart_buf:
+                idx = uart_buf.find(b"\n")
+                line = uart_buf[:idx].decode("utf-8", "replace").strip()
+                uart_buf = uart_buf[idx+1:]
+                if line.startswith("TIME:"):
+                    body = line[5:]
+                    if len(body) == 8 and body[2] == ":" and body[5] == ":":
+                        try:
+                            h = int(body[0:2])
+                            m = int(body[3:5])
+                            s = int(body[6:8])
+                            set_ds3231(h, m, s)    # write NTP time to RTC
+                            send_uart("TIME_ACK")
+                            break
+                        except ValueError:
+                            pass
 
 # Non-blocking poll for SCHED: (up to 3 seconds)
 for _ in range(300):
@@ -349,27 +325,24 @@ display.clear()
 clear_oled()
 read_sensors()
 sensor_timer = 30
-rtc_sync_timer = RTC_SYNC_INTERVAL
 
 # ── Main loop ─────────────────────────────────────────────────────────────────
 while True:
     read_uart()
     check_long_press()
 
-    if tick_clock():
-        check_schedules()
+    rh, rm, rs = read_ds3231()
+    if rh is not None:
+        h, m, s = rh, rm, rs
+        if m != prev_m:
+            dispensed_this_minute = False
+            prev_m = m
+            check_schedules()
 
     sensor_timer -= 1
     if sensor_timer <= 0:
         read_sensors()
         sensor_timer = 30
-
-    rtc_sync_timer -= 1
-    if rtc_sync_timer <= 0:
-        rh, rm, rs = read_ds3231()
-        if rh or rm or rs:      # guard: don't overwrite good time with error (0,0,0)
-            h, m, s = rh, rm, rs
-        rtc_sync_timer = RTC_SYNC_INTERVAL
 
     update_oled()
     sleep(1000)

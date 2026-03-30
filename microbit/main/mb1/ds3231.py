@@ -30,7 +30,7 @@ def read_ds3231():
             hrs = _bcd_to_int(hr_byte & 0x3F)
         return hrs, mins, sec
     except:
-        return 0, 0, 0
+        return None, None, None
 
 
 def set_ds3231(h, m, s):

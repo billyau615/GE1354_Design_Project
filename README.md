@@ -19,8 +19,11 @@ An automated drug dispensing system built with Micro:bit, ESP32, and a web-based
 │   ├── oled-dht20/
 │   ├── buzzer-rickroll/
 │   ├── ir-sensor/
-│   └── ntp-clock/
-│       ├── microbit/
+│   ├── ntp-clock/
+│   │   ├── microbit/
+│   │   └── esp32/
+│   └── ds3231/
+│       ├── microbit files (main.py, ds3231.py, oled.py)
 │       └── esp32/
 ├── microbit/main/         # Micro:bit integrated code
 │   ├── mb1/               # Micro:bit #1 (main logic)
@@ -58,6 +61,7 @@ Small test projects to validate individual components before integration:
 | [buzzer-rickroll](experiments/buzzer-rickroll/) | Play "Never Gonna Give You Up" on a passive buzzer |
 | [ntp-clock](experiments/ntp-clock/) | Sync time from ESP32 NTP and display datetime on OLED, beep every minute |
 | [ir-sensor](experiments/ir-sensor/) | FC-51 IR obstacle sensor on P1 triggers buzzer on P0 |
+| [ds3231](experiments/ds3231/) | Fetch NTP time from ESP32 via UART, write to DS3231 RTC, display time from RTC on OLED |
 
 ## Web UI Preview
 
