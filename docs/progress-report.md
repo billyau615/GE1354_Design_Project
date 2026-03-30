@@ -30,7 +30,7 @@
 - DS3231 RTC: ESP32 fetches NTP, sends to Micro:bit via UART, written to DS3231; time read from DS3231 and displayed on OLED every second; "No NTP signal" / "RTC Error" on failure
 
 ### Hardware Validated
-- DS3231 RTC module (I2C 0x68, battery backup CR2032)
+- FC-51 IR obstacle sensor
 
 ### Main Project — Complete
 
