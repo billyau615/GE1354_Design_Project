@@ -52,7 +52,7 @@ Small test projects to validate individual components before integration:
 
 | Experiment | Description |
 |---|---|
-| [oled-dht20](microbit/experiments/oled-dht20/) | Read DHT20 temperature/humidity and display on OLED |
-| [buzzer-rickroll](microbit/experiments/buzzer-rickroll/) | Play "Never Gonna Give You Up" on a passive buzzer |
-| [ntp-clock](microbit/experiments/ntp-clock/) | Sync time from ESP32 NTP and display datetime on OLED, beep every minute |
-| [ir-sensor](microbit/experiments/ir-sensor/) | FC-51 IR obstacle sensor on P1 triggers buzzer on P0 |
+| [oled-dht20](experiments/oled-dht20/) | Read DHT20 temperature/humidity and display on OLED |
+| [buzzer-rickroll](experiments/buzzer-rickroll/) | Play "Never Gonna Give You Up" on a passive buzzer |
+| [ntp-clock](experiments/ntp-clock/) | Sync time from ESP32 NTP and display datetime on OLED, beep every minute |
+| [ir-sensor](experiments/ir-sensor/) | FC-51 IR obstacle sensor on P1 triggers buzzer on P0 |
