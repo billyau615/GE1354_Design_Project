@@ -1,0 +1,6 @@
+{
+  "telegram_uid": "",
+  "bot_token": "",
+  "temp_threshold": 35.0,
+  "humi_threshold": 80.0
+}

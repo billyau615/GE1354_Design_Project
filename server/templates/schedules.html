@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mt-4">Schedules</h2>
+<p class="text-muted">Up to 6 medication times. On each schedule, the selected type(s) will be dispensed and the alarm will sound.</p>
+
+{% if schedules %}
+<table class="table table-bordered w-auto">
+  <thead><tr><th>#</th><th>Time</th><th>Type</th><th></th></tr></thead>
+  <tbody>
+    {% for s in schedules %}
+    <tr>
+      <td>{{ loop.index }}</td>
+      <td>{{ s.time }}</td>
+      <td>
+        {% if s.type == "AB" %}A + B
+        {% elif s.type == "A" %}Type A
+        {% else %}Type B
+        {% endif %}
+      </td>
+      <td>
+        <form method="post" action="/schedules/delete/{{ loop.index0 }}" style="display:inline">
+          <button class="btn btn-sm btn-danger"
+                  onclick="return confirm('Delete this schedule?')">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="text-muted">No schedules yet.</p>
+{% endif %}
+
+{% if schedules|length < 6 %}
+<h5 class="mt-4">Add Schedule</h5>
+<form method="post" class="row g-2 align-items-end">
+  <div class="col-auto">
+    <label class="form-label">Time</label>
+    <input type="time" name="time" class="form-control" required>
+  </div>
+  <div class="col-auto">
+    <label class="form-label">Type</label>
+    <select name="type" class="form-select">
+      <option value="A">Type A</option>
+      <option value="B">Type B</option>
+      <option value="AB">Both (A + B)</option>
+    </select>
+  </div>
+  <div class="col-auto">
+    <button type="submit" class="btn btn-primary">Add</button>
+  </div>
+</form>
+{% else %}
+<p class="text-warning mt-3">Maximum 6 schedules reached. Delete one to add another.</p>
+{% endif %}
+{% endblock %}

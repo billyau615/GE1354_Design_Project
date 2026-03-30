@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mt-4">Dashboard</h2>
+
+<!-- Storage -->
+<div class="row mt-3">
+  <div class="col-12"><h5>Storage</h5></div>
+  {% for label, key in [("Type A", "a"), ("Type B", "b")] %}
+  <div class="col-md-3 col-6 mb-3">
+    <div class="card text-center p-3">
+      <div class="fw-bold">{{ label }}</div>
+      <div class="display-6 {% if storage[key] == 0 %}empty{% endif %}">
+        {{ storage[key] }} / 7
+      </div>
+      {% if storage[key] == 0 %}
+      <small class="text-danger">Empty — please refill</small>
+      {% endif %}
+      <button class="btn btn-sm btn-outline-primary mt-2"
+              onclick="dispense('{{ key|upper }}')">Dispense {{ label }}</button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Sensor -->
+<div class="row mt-2">
+  <div class="col-12 d-flex align-items-center gap-2">
+    <h5 class="mb-0">Environment</h5>
+    <button class="btn btn-sm btn-outline-secondary" onclick="reloadSensor()">Reload</button>
+    <small class="text-muted" id="sensor-updated">
+      {% if sensor.updated %}Last updated: {{ sensor.updated }}{% else %}Not yet received{% endif %}
+    </small>
+  </div>
+  <div class="col-md-2 col-4 mt-2">
+    <div class="card text-center p-3">
+      <div class="text-muted">Temperature</div>
+      <div class="fs-4" id="sensor-temp">
+        {% if sensor.temp is not none %}{{ sensor.temp }}°C{% else %}—{% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2 col-4 mt-2">
+    <div class="card text-center p-3">
+      <div class="text-muted">Humidity</div>
+      <div class="fs-4" id="sensor-humi">
+        {% if sensor.humidity is not none %}{{ sensor.humidity }}%{% else %}—{% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Upcoming schedules -->
+<div class="row mt-4">
+  <div class="col-12">
+    <h5>Upcoming Schedules
+      {% if countdown %}
+      <span class="badge bg-info text-dark ms-2">Next in {{ countdown }}</span>
+      {% endif %}
+    </h5>
+    {% if schedules %}
+    <table class="table table-sm table-bordered w-auto">
+      <thead><tr><th>Time</th><th>Type</th></tr></thead>
+      <tbody>
+        {% for s in schedules %}
+        <tr><td>{{ s.time }}</td><td>{{ s.type }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted">No schedules set. <a href="/schedules">Add one</a>.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function dispense(type) {
+  if (!confirm('Dispense type ' + type + '?')) return;
+  const res = await fetch('/dispense', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({type})
+  });
+  const data = await res.json();
+  if (data.ok) alert('Dispense command sent for type ' + type);
+}
+
+async function reloadSensor() {
+  const res = await fetch('/api/sensor');
+  const data = await res.json();
+  document.getElementById('sensor-temp').textContent = data.temp !== null ? data.temp + '°C' : '—';
+  document.getElementById('sensor-humi').textContent = data.humidity !== null ? data.humidity + '%' : '—';
+  document.getElementById('sensor-updated').textContent = data.updated ? 'Last updated: ' + data.updated : 'Not yet received';
+}
+</script>
+{% endblock %}

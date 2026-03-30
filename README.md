@@ -34,6 +34,17 @@ An automated drug dispensing system built with Micro:bit, ESP32, and a web-based
 - [Hardware & Wiring](docs/hardware.md)
 - [Progress Report](docs/progress-report.md)
 
+## Main Code
+
+| File | Description |
+|---|---|
+| [microbit/main/main.py](microbit/main/main.py) | Micro:bit #1 — main dispenser logic |
+| [microbit/main/mb2_main.py](microbit/main/mb2_main.py) | Micro:bit #2 — servo actuator (stub) |
+| [esp32/main/main/main.ino](esp32/main/main/main.ino) | ESP32 — WiFi + NTP + MQTT + UART bridge |
+| [server/app.py](server/app.py) | Web server — Flask routes |
+| [server/mqtt_bridge.py](server/mqtt_bridge.py) | MQTT background thread |
+| [server/telegram.py](server/telegram.py) | Telegram alert helper |
+
 ## Experiments
 
 Small test projects to validate individual components before integration:
