@@ -56,7 +56,7 @@ def next_countdown(schedules):
                 min_delta = delta
     if min_delta is None:
         return None
-    return f"{min_delta // 60:02d}:{min_delta % 60:02d}"
+    return f"{min_delta // 60}H {min_delta % 60:02d}M"
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
