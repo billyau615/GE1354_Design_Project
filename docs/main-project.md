@@ -1,6 +1,6 @@
 # Main Project Design
 
-> Last updated: 30 March 2026
+> Last updated: 31 March 2026
 
 This document covers the design decisions, protocols, and file structure for the integrated drug dispenser system.
 
@@ -67,7 +67,8 @@ All messages are newline-terminated ASCII.
 | ESP→MB | `TIME:14:30:00` | NTP time (sent every 1s after TIME_REQ, until ACK) |
 | ESP→MB | `SCHED:14:30:A,15:00:B` | up to 6 comma-separated schedules |
 | ESP→MB | `STORAGE_SET:7,5` | push initial storage counts to MB1 |
-| ESP→MB | `DISPENSE:A` | manual dispense command from web UI |
+| ESP→MB | `DISPENSE:A/B/AB` | normal dispense from web UI (triggers buzzer + OLED alert) |
+| ESP→MB | `MANUAL:A/B` | manual (silent) dispense from web UI — no buzzer or OLED alert |
 
 ---
 
@@ -80,7 +81,7 @@ All messages are newline-terminated ASCII.
 | ESP→Broker | `dispenser/sensor` | `{"temp": 25.1, "humidity": 60.5}` |
 | ESP→Broker | `dispenser/storage` | `{"a": 7, "b": 5}` or `{"a": 0, "b": 5, "empty_a": true}` |
 | ESP→Broker | `dispenser/dispense_done` | `{"type": "A"}` |
-| Server→Broker | `dispenser/command` | `{"action": "dispense", "type": "A"}` |
+| Server→Broker | `dispenser/command` | `{"action": "dispense", "type": "A"}` or `{"action": "manual", "type": "A"}` |
 | Server→Broker | `dispenser/schedules` | `[{"time":"14:30","type":"A"}, ...]` (retained) |
 
 ---
@@ -103,10 +104,14 @@ All messages are newline-terminated ASCII.
 - 2 types (A and B), 8 slots each, 1 always left empty = **7 pills max per type**
 - Wheel mechanic: each dispense command turns the servo one slot (MB2, currently stubbed)
 
+### Dispense modes
+- **Normal dispense** (A, B, or A+B): plays Never Gonna Give You Up on buzzer, OLED shows "Take meds / type / current time". Waits for FC-51 IR sensor (P1) to detect hand before stopping buzzer and returning to normal display.
+- **Manual dispense** (A or B only): silently sends radio command to MB2 and decrements storage — no buzzer, no OLED change, no IR wait.
+
 ### Schedules
 - Up to **6 medication times** configured via web UI
 - Each schedule: time (HH:MM) + type (A, B, or AB)
-- MB1 checks schedules on every minute tick; fires alarm + dispense on match
+- MB1 calls `check_schedules()` every second (guarded by `dispensed_this_minute` flag); resets flag on minute change. This ensures a skipped DS3231 read at the start of a minute cannot cause a missed dose.
 - Schedules persisted in `server/data/schedules.json`; pushed to MB1 via retained MQTT on every boot
 
 ### Data persistence across reboots
@@ -134,9 +139,18 @@ All messages are newline-terminated ASCII.
 - DS3231 battery backup (CR2032) retains time across power loss; NTP re-sync on next boot restores accuracy
 
 ### OLED display (MB1)
-- Line 0: `HH:MM:SS` (read from DS3231 every second)
-- Line 1: `H:60.5% T:25.1C`
-- Line 2: `Next:02:15` (countdown to next schedule, or `No sched`)
+All four lines use `write_oled_large` (2× scale, 16px tall). Max ~10 chars per line.
+
+| Pages | Content | Example |
+|---|---|---|
+| 0–1 | Current time (12-hour) | `12:30 PM` |
+| 2–3 | Humidity | `H:60.5%` |
+| 4–5 | Temperature | `T:25.1C` |
+| 6–7 | Countdown to next dose | `Nx:1H 25M` or `No sched` |
+
+Countdown skips `delta == 0` so it shows the next *future* schedule immediately after a dose is taken, rather than showing `0H 00M`.
+
+During a normal dispense, the display switches to: `Take meds` / type (`A`, `B`, or `A+B`) / current time. Restores automatically when IR sensor is triggered.
 
 ---
 
@@ -161,7 +175,7 @@ python app.py <broker-host> <mqtt-user> <mqtt-pass>
 # e.g. python app.py YOUR_MQTT_HOST myuser mypassword
 ```
 
-Accessible at `http://127.0.0.1:5000`. Reverse-proxy with nginx if external access is needed.
+Accessible at `http://0.0.0.0:5000` (all interfaces). Use screen or systemd to keep running.
 
 ## Arduino Libraries Required
 

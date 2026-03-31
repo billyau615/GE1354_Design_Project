@@ -63,6 +63,47 @@ Full integrated system built across all components:
 - Software clock dropped in favour of DS3231 — eliminates drift, survives power loss
 - All protocols documented in [docs/main-project.md](main-project.md)
 
+---
+
+## 31 March 2026
+
+### MB1 — Dispense UX
+
+- **Normal dispense**: OLED switches to "Take meds / type / time"; buzzer plays Never Gonna Give You Up on loop; waits for FC-51 IR sensor (P1) to detect the user's hand before stopping music and restoring the display
+- **Manual (silent) dispense**: drops pills via radio to MB2 with no buzzer or OLED change — useful for remote or caregiver-initiated doses
+
+### MB1 — OLED improvements
+
+- All four display lines now use `write_oled_large` (2× scale) — consistent font size throughout
+- Time format changed to 12-hour AM/PM (`12:30 PM`); seconds removed
+- Countdown format: `Nx:1H 25M` (or `No sched`); skips current-minute schedules immediately after dispensing to avoid showing `0H 00M`
+
+### MB1 — Schedule reliability
+
+- `check_schedules()` now called every second instead of only on minute-change detection
+- `dispensed_this_minute` flag prevents double-firing; reset each time the minute advances
+- Eliminates missed-dose risk if the DS3231 I2C read happens to fail at the exact second a minute begins
+
+### MB1 — Source size
+
+- All comments stripped from MB1 `.py` files to reduce combined source from ~20 KB to ~16 KB
+- Files must be flashed via **Thonny** (View → Files → Upload to /), not the web editor
+
+### Web dashboard
+
+- Storage cards now show counts only (dispense buttons removed)
+- New **Dispense** section with two cards:
+  - *Normal* — A, B, A+B buttons (triggers buzzer + alert)
+  - *Manual* — A, B buttons (silent drop)
+- Countdown badge format changed to `XH XXM` (e.g. "Next in 1H 25M")
+
+### Protocol additions
+
+| Layer | Addition |
+|---|---|
+| UART | `MANUAL:A/B` — ESP32 → MB1 for silent dispense |
+| MQTT | `action=manual` in `dispenser/command` |
+
 ## Up Next
 - Micro:bit #2 servo motor control (hardware pending); radio link testable now via LED matrix feedback
 - Integration testing: boot sequence, schedule trigger, refill, Telegram alerts
