@@ -146,6 +146,7 @@ All messages are newline-terminated ASCII.
 |---|---|---|
 | `esp32/main/main.ino` | `WIFI_SSID` / `WIFI_PASS` | Your WiFi credentials |
 | `esp32/main/main.ino` | `MQTT_HOST` / `MQTT_PORT` | Mosquitto broker address |
+| `esp32/main/main.ino` | `MQTT_USER` / `MQTT_PASS` | MQTT broker credentials |
 | Settings page (web UI) | Bot Token | Telegram bot token from @BotFather |
 | Settings page (web UI) | Telegram UID | Your Telegram user ID (from @userinfobot) |
 
@@ -156,8 +157,8 @@ All messages are newline-terminated ASCII.
 ```bash
 cd server
 pip install flask paho-mqtt requests
-python app.py <mqtt-broker-ip>
-# e.g. python app.py 192.168.1.100
+python app.py <broker-host> <mqtt-user> <mqtt-pass>
+# e.g. python app.py YOUR_MQTT_HOST myuser mypassword
 ```
 
 Accessible at `http://127.0.0.1:5000`. Reverse-proxy with nginx if external access is needed.

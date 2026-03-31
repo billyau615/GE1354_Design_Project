@@ -19,6 +19,8 @@ const char* WIFI_SSID  = "";        // fill in
 const char* WIFI_PASS  = "";        // fill in
 const char* MQTT_HOST  = "";        // fill in (e.g. "192.168.1.100")
 const int   MQTT_PORT  = 1883;
+const char* MQTT_USER  = "";        // fill in
+const char* MQTT_PASS  = "";        // fill in
 const long  GMT_OFFSET = 8 * 3600; // UTC+8 Hong Kong
 const int   DST_OFFSET = 0;
 
@@ -100,7 +102,7 @@ void loop() {
 
 // ── MQTT ──────────────────────────────────────────────────────────────────────
 void connect_mqtt() {
-    if (mqttClient.connect("dispenser-esp32")) {
+    if (mqttClient.connect("dispenser-esp32", MQTT_USER, MQTT_PASS)) {
         Serial.println("[mqtt] connected");
         mqttClient.subscribe("dispenser/command");
         mqttClient.subscribe("dispenser/schedules");
@@ -114,7 +116,7 @@ void connect_mqtt() {
 void reconnect_mqtt() {
     Serial.print("[mqtt] reconnecting...");
     delay(5000);
-    if (mqttClient.connect("dispenser-esp32")) {
+    if (mqttClient.connect("dispenser-esp32", MQTT_USER, MQTT_PASS)) {
         Serial.println(" reconnected");
         mqttClient.subscribe("dispenser/command");
         mqttClient.subscribe("dispenser/schedules");

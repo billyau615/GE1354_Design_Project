@@ -137,5 +137,7 @@ def api_storage():
 if __name__ == "__main__":
     import sys
     broker = sys.argv[1] if len(sys.argv) > 1 else "localhost"
-    mqtt_bridge.start(broker)
+    user   = sys.argv[2] if len(sys.argv) > 2 else None
+    passwd = sys.argv[3] if len(sys.argv) > 3 else None
+    mqtt_bridge.start(broker, broker_user=user, broker_pass=passwd)
     app.run(host="127.0.0.1", port=5000, debug=False)

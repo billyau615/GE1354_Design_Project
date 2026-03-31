@@ -123,7 +123,8 @@ def _on_message(client, userdata, msg):
 
 # ── Startup ───────────────────────────────────────────────────────────────────
 
-def start(broker_host: str, broker_port: int = 1883):
+def start(broker_host: str, broker_port: int = 1883,
+          broker_user: str = None, broker_pass: str = None):
     global _client
 
     # Load persisted storage state on startup
@@ -139,6 +140,8 @@ def start(broker_host: str, broker_port: int = 1883):
     _client = mqtt.Client(client_id="dispenser-server")
     _client.on_connect = _on_connect
     _client.on_message = _on_message
+    if broker_user:
+        _client.username_pw_set(broker_user, broker_pass)
     _client.connect(broker_host, broker_port)
 
     t = threading.Thread(target=_client.loop_forever, daemon=True)
