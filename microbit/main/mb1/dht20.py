@@ -3,7 +3,6 @@ from microbit import i2c, sleep
 DHT20_ADDR = 0x38
 
 def read_dht20():
-    """Read temperature and humidity from DHT20"""
     try:
         i2c.write(DHT20_ADDR, b'\xac\x33\x00')
         sleep(80)
