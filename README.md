@@ -40,6 +40,13 @@ An automated drug dispensing system built with Micro:bit, ESP32, and a web-based
 - [Main Project Design](docs/main-project.md) — protocols, features, config checklist
 - [Progress Report](docs/progress-report.md)
 
+### Component Guides
+
+- [Micro:bit #1](docs/mb1.md) — boot sequence, OLED layout, dispensing, schedules, UART/radio protocol
+- [ESP32](docs/esp32.md) — WiFi/NTP setup, MQTT topics, UART relay, NVS persistence
+- [Web UI](docs/web-ui.md) — dashboard, schedules page, settings page, real-time polling
+- [Python Backend](docs/backend.md) — Flask routes, MQTT bridge, Telegram alerts, data flow
+
 ## Main Code
 
 | File | Description |
