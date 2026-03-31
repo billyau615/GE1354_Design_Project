@@ -18,16 +18,16 @@
   </div>
 </div>
 
-<h2 class="mt-4">Dashboard</h2>
+<h4 class="mb-3 mt-4">Dashboard</h4>
 
 <!-- Storage -->
-<div class="row mt-3">
-  <div class="col-12"><h5>Storage</h5></div>
+<p class="section-title">Storage</p>
+<div class="row g-3 mb-4">
   {% for label, key in [("Type A", "a"), ("Type B", "b")] %}
-  <div class="col-6 col-md-3 mb-3">
-    <div class="card text-center p-3">
-      <div class="fw-bold">{{ label }}</div>
-      <div class="display-6" id="storage-count-{{ key }}">{{ storage[key] }} / 7</div>
+  <div class="col-6 col-md-3">
+    <div class="card p-3">
+      <div class="storage-label mb-1">{{ label }}</div>
+      <div class="storage-count" id="storage-count-{{ key }}">{{ storage[key] }} / 7</div>
       <div class="pill-bar">
         <div class="pill-bar-fill" id="storage-bar-{{ key }}"
              style="width:{{ (storage[key] / 7 * 100)|int }}%;
@@ -43,32 +43,32 @@
         {% else %}&nbsp;{% endif %}
       </small>
       <button class="btn btn-sm btn-outline-primary mt-2 w-100"
-              onclick="dispense('{{ key|upper }}')">Dispense {{ label }}</button>
+              onclick="dispense('{{ key|upper }}')">Dispense {{ key|upper }}</button>
     </div>
   </div>
   {% endfor %}
 </div>
 
-<!-- Sensor -->
-<div class="row mt-2">
-  <div class="col-12 d-flex flex-wrap align-items-center gap-2 mb-2">
-    <h5 class="mb-0">Environment</h5>
-    <small class="text-muted" id="sensor-updated">
-      {% if sensor.updated %}Last updated: {{ sensor.updated }}{% else %}Not yet received{% endif %}
-    </small>
-  </div>
-  <div class="col-6 col-md-2 mt-1">
-    <div class="card text-center p-3">
+<!-- Environment -->
+<p class="section-title d-flex flex-wrap align-items-center gap-2">
+  Environment
+  <small class="text-muted fw-normal" style="text-transform:none;letter-spacing:0" id="sensor-updated">
+    {% if sensor.updated %}Last updated: {{ sensor.updated }}{% else %}Not yet received{% endif %}
+  </small>
+</p>
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-2">
+    <div class="card p-3 text-center">
       <div class="text-muted small">Temperature</div>
-      <div class="fs-4" id="sensor-temp">
+      <div class="sensor-val text-danger" id="sensor-temp">
         {% if sensor.temp is not none %}{{ sensor.temp }}°C{% else %}—{% endif %}
       </div>
     </div>
   </div>
-  <div class="col-6 col-md-2 mt-1">
-    <div class="card text-center p-3">
+  <div class="col-6 col-md-2">
+    <div class="card p-3 text-center">
       <div class="text-muted small">Humidity</div>
-      <div class="fs-4" id="sensor-humi">
+      <div class="sensor-val text-info" id="sensor-humi">
         {% if sensor.humidity is not none %}{{ sensor.humidity }}%{% else %}—{% endif %}
       </div>
     </div>
@@ -76,29 +76,28 @@
 </div>
 
 <!-- Upcoming schedules -->
-<div class="row mt-4">
-  <div class="col-12">
-    <h5>Upcoming Schedules
-      {% if countdown %}
-      <span class="badge bg-info text-dark ms-2">Next in {{ countdown }}</span>
-      {% endif %}
-    </h5>
-    {% if schedules %}
-    <div class="table-responsive">
-      <table class="table table-sm table-bordered">
-        <thead><tr><th>Time</th><th>Type</th></tr></thead>
-        <tbody>
-          {% for s in schedules %}
-          <tr><td>{{ s.time }}</td><td>{{ s.type }}</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% else %}
-    <p class="text-muted">No schedules set. <a href="/schedules">Add one</a>.</p>
-    {% endif %}
-  </div>
+<p class="section-title">
+  Upcoming Schedules
+  {% if countdown %}
+  <span class="badge bg-info text-dark ms-1">Next in {{ countdown }}</span>
+  {% endif %}
+</p>
+{% if schedules %}
+<div class="table-responsive">
+  <table class="table table-sm table-bordered bg-white">
+    <thead class="table-light"><tr><th>Time</th><th>Type</th></tr></thead>
+    <tbody>
+      {% for s in schedules %}
+      <tr><td>{{ s.time }}</td><td>{{ s.type }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
+{% else %}
+<p class="text-muted">No schedules set. <a href="/schedules">Add one</a>.</p>
+{% endif %}
+<a href="/schedules" class="btn btn-sm btn-outline-secondary">Manage schedules →</a>
+
 {% endblock %}
 
 {% block scripts %}
@@ -158,7 +157,7 @@ async function dispense(type) {
   const data = await res.json();
   if (data.ok) {
     alert('Dispense command sent for type ' + type);
-    poll(); // immediately refresh counts
+    poll();
   }
 }
 
