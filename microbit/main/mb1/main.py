@@ -334,7 +334,7 @@ while True:
 
     rh, rm, rs = read_ds3231()
     if rh is not None:
-        h, m, s = int(rh), int(rm), int(rs)
+        h, m, s = rh, rm, rs
         if m != prev_m:
             dispensed_this_minute = False
             prev_m = m
