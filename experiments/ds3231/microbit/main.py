@@ -10,13 +10,16 @@ init_oled()
 clear_oled()
 write_oled("Waiting NTP...", 0)
 
-# ── Request time from ESP32, then wait for TIME: reply ────────────────────────
-uart.write("TIME_REQ\n")
+# ── Request time from ESP32, resend every 2s until TIME: reply ────────────────
 uart_buf = b''
 elapsed = 0
+last_req = -2000   # send immediately on first iteration
 ntp_ok = False
 
 while elapsed < NTP_TIMEOUT_MS:
+    if elapsed - last_req >= 2000:
+        uart.write("TIME_REQ\n")
+        last_req = elapsed
     if uart.any():
         chunk = uart.read(1)
         if chunk:
