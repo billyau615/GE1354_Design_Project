@@ -1,4 +1,4 @@
-from microbit import uart, pin0, pin8, pin16, button_a, button_b, display, sleep, Image
+from microbit import uart, pin0, pin1, pin8, pin16, button_a, button_b, display, sleep, Image
 import radio
 import music
 from oled import init_oled, write_oled, write_oled_large, clear_oled
@@ -8,6 +8,17 @@ from ds3231 import read_ds3231, set_ds3231
 radio.on()
 radio.config(group=42)
 uart.init(baudrate=9600, tx=pin16, rx=pin8)
+music.set_tempo(bpm=114, ticks=16)
+
+RICKROLL = [
+    "G4:4","A4:4","C5:4","A4:4",
+    "E5:10","R:2","E5:10","R:2","D5:20","R:4",
+    "G4:4","A4:4","C5:4","A4:4",
+    "D5:10","R:2","D5:10","R:2","C5:4","B4:4","A4:12","R:4",
+    "G4:4","A4:4","C5:4","A4:4",
+    "C5:12","D5:4","B4:6","R:2","A4:4","G4:8","R:4",
+    "G4:8","D5:16","C5:24",
+]
 
 h = 0; m = 0; s = 0
 schedules = []
@@ -95,12 +106,21 @@ def do_dispense(type_str):
         if storage_b == 0:
             send_uart("STORAGE:{},0:EMPTY_B".format(storage_a))
             return
-    music.pitch(880, 200, pin=pin0)
-    sleep(100)
-    music.pitch(1100, 200, pin=pin0)
-    sleep(100)
-    music.pitch(880, 200, pin=pin0)
+
     radio.send("DISPENSE:" + type_str)
+
+    label = "A+B" if type_str == "AB" else type_str
+    write_oled_large("Take meds", 0)
+    write_oled_large(label, 2)
+    write_oled_large("{:02d}:{:02d}".format(h, m), 4)
+    write_oled("", 6)
+    write_oled("", 7)
+
+    music.play(RICKROLL, pin=pin0, wait=False, loop=True)
+    while pin1.read_digital() != 0:
+        sleep(50)
+    music.stop(pin0)
+
     empty_flag = ""
     if type_str == "A" or type_str == "AB":
         storage_a -= 1
@@ -110,8 +130,10 @@ def do_dispense(type_str):
         storage_b -= 1
         if storage_b == 0:
             empty_flag += ":EMPTY_B"
+
     send_uart("STORAGE:{},{}{}".format(storage_a, storage_b, empty_flag))
     send_uart("DISPENSE_DONE:" + type_str)
+    update_oled()
 
 def check_schedules():
     global dispensed_this_minute
@@ -128,11 +150,13 @@ def compute_countdown():
     min_delta = None
     for (sh, sm, _) in schedules:
         delta = (sh * 60 + sm - now_mins) % (24 * 60)
+        if delta == 0:
+            continue
         if min_delta is None or delta < min_delta:
             min_delta = delta
     if min_delta is None:
         return "No sched"
-    return "{}H {:02d}M".format(min_delta // 60, min_delta % 60)
+    return "Next: {}H {:02d}M".format(min_delta // 60, min_delta % 60)
 
 def read_sensors():
     global last_humi, last_temp
@@ -150,7 +174,8 @@ def update_oled():
     else:
         write_oled_large("Sensor...", 2)
         write_oled_large("", 4)
-    write_oled_large(compute_countdown(), 6)
+    write_oled(compute_countdown(), 6)
+    write_oled("", 7)
 
 def enter_refill_mode(type_str):
     global storage_a, storage_b
