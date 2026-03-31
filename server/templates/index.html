@@ -78,9 +78,10 @@
 <!-- Upcoming schedules -->
 <p class="section-title">
   Upcoming Schedules
-  {% if countdown %}
-  <span class="badge bg-info text-dark ms-1">Next in {{ countdown }}</span>
-  {% endif %}
+  <span class="badge bg-info text-dark ms-1" id="countdown-badge"
+        {% if not countdown %}style="display:none"{% endif %}>
+    Next in <span id="countdown-text">{{ countdown or '' }}</span>
+  </span>
 </p>
 {% if schedules %}
 <div class="table-responsive">
@@ -127,19 +128,33 @@ function setSensor(data) {
   document.getElementById('sensor-updated').textContent = data.updated ? 'Last updated: ' + data.updated : 'Not yet received';
 }
 
+function setCountdown(val) {
+  const badge = document.getElementById('countdown-badge');
+  const text  = document.getElementById('countdown-text');
+  if (val) {
+    text.textContent = val;
+    badge.style.display = '';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
 async function poll() {
   try {
-    const [sRes, envRes] = await Promise.all([
+    const [sRes, envRes, cdRes] = await Promise.all([
       fetch('/api/storage'),
-      fetch('/api/sensor')
+      fetch('/api/sensor'),
+      fetch('/api/countdown')
     ]);
-    if (!sRes.ok || !envRes.ok) throw new Error();
-    const storage = await sRes.json();
-    const sensor  = await envRes.json();
+    if (!sRes.ok || !envRes.ok || !cdRes.ok) throw new Error();
+    const storage  = await sRes.json();
+    const sensor   = await envRes.json();
+    const cd       = await cdRes.json();
 
     setStorage('a', storage.a);
     setStorage('b', storage.b);
     setSensor(sensor);
+    setCountdown(cd.countdown);
     failCount = 0;
   } catch (_) {
     failCount++;

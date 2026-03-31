@@ -1,7 +1,7 @@
 from microbit import uart, pin0, pin1, pin8, pin16, button_a, button_b, display, sleep, Image
 import radio
 import music
-from oled import init_oled, write_oled, clear_oled
+from oled import init_oled, write_oled, write_oled_large, clear_oled
 from dht20 import read_dht20
 from ds3231 import read_ds3231, set_ds3231
 
@@ -162,7 +162,7 @@ def compute_countdown():
             min_delta = delta
     if min_delta is None:
         return "No sched"
-    return "{:02d}:{:02d}".format(min_delta // 60, min_delta % 60)
+    return "{}H {:02d}M".format(min_delta // 60, min_delta % 60)
 
 def read_sensors():
     global last_humi, last_temp
@@ -173,12 +173,14 @@ def read_sensors():
         send_uart("SENSOR:{},{}".format(temp, humi))
 
 def update_oled():
-    write_oled("{:02d}:{:02d}:{:02d}".format(h, m, s), 0)
+    write_oled_large("{:02d}:{:02d}:{:02d}".format(h, m, s), 0)
     if last_humi is not None:
-        write_oled("H:{:.1f}% T:{:.1f}C".format(last_humi, last_temp), 1)
+        write_oled_large("H:{:.1f}%".format(last_humi), 2)
+        write_oled_large("T:{:.1f}C".format(last_temp), 4)
     else:
-        write_oled("Sensor...", 1)
-    write_oled("Next:" + compute_countdown(), 2)
+        write_oled_large("Sensor...", 2)
+        write_oled_large("", 4)
+    write_oled_large(compute_countdown(), 6)
 
 def enter_refill_mode(type_str):
     global storage_a, storage_b

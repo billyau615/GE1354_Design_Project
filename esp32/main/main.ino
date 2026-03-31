@@ -15,12 +15,12 @@
 #include <time.h>
 
 // ── Configuration ─────────────────────────────────────────────────────────────
-const char* WIFI_SSID  = "";        // fill in
-const char* WIFI_PASS  = "";        // fill in
-const char* MQTT_HOST  = "";        // fill in (e.g. "192.168.1.100")
+const char* WIFI_SSID  = "YOUR_WIFI_SSID";        // fill in
+const char* WIFI_PASS  = "YOUR_WIFI_PASSWORD";        // fill in
+const char* MQTT_HOST  = "YOUR_MQTT_HOST";        // fill in (e.g. "192.168.1.100")
 const int   MQTT_PORT  = 1883;
-const char* MQTT_USER  = "";        // fill in
-const char* MQTT_PASS  = "";        // fill in
+const char* MQTT_USER  = "YOUR_MQTT_USER";        // fill in
+const char* MQTT_PASS  = "YOUR_MQTT_PASSWORD";        // fill in
 const long  GMT_OFFSET = 8 * 3600; // UTC+8 Hong Kong
 const int   DST_OFFSET = 0;
 
@@ -185,6 +185,9 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
         if (!first) {
             Serial1.println(sched_line);
             Serial.printf("[uart] sent: %s\n", sched_line);
+        } else {
+            Serial1.println("SCHED:");
+            Serial.println("[uart] sent: SCHED: (clear)");
         }
     }
 }

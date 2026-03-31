@@ -135,6 +135,41 @@ def clear_oled():
         for _ in range(8):      # 8 * 16 = 128 bytes per page
             i2c.write(OLED_ADDR, chunk)
 
+def _scale_nibble(nibble):
+    """Expand 4 bits to 8 bits by doubling each bit (used for 2x vertical scale)."""
+    result = 0
+    for i in range(4):
+        bit = (nibble >> i) & 1
+        result |= (bit << (i * 2))
+        result |= (bit << (i * 2 + 1))
+    return result
+
+def write_oled_large(text, start_page):
+    """Write text at 2x scale (10x16px per char, 12px stride). Uses 2 pages."""
+    top_data = bytearray(128)
+    bot_data = bytearray(128)
+    col = 0
+    for char in text:
+        if col + 10 > 128:
+            break
+        idx = ord(char) - 32
+        if 0 <= idx < 95:
+            for j in range(5):
+                byte = FONT[idx * 5 + j]
+                top = _scale_nibble(byte & 0x0F)
+                bot = _scale_nibble((byte >> 4) & 0x0F)
+                top_data[col + j * 2]     = top
+                top_data[col + j * 2 + 1] = top
+                bot_data[col + j * 2]     = bot
+                bot_data[col + j * 2 + 1] = bot
+        col += 12
+    _cmd(0x22, start_page, start_page)
+    _cmd(0x21, 0, 127)
+    i2c.write(OLED_ADDR, b'\x40' + bytes(top_data))
+    _cmd(0x22, start_page + 1, start_page + 1)
+    _cmd(0x21, 0, 127)
+    i2c.write(OLED_ADDR, b'\x40' + bytes(bot_data))
+
 def write_oled(text, line):
     """Write text to the OLED at the given page line (0-7)."""
     _cmd(0x22, line, line)  # set page

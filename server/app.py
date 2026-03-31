@@ -132,6 +132,11 @@ def api_storage():
     return jsonify(mqtt_bridge.get_storage())
 
 
+@app.route("/api/countdown")
+def api_countdown():
+    return jsonify({"countdown": next_countdown(load_schedules())})
+
+
 # ── Startup ───────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
