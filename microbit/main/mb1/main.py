@@ -81,6 +81,8 @@ def parse_uart_line(line):
                 pass
     elif line.startswith("DISPENSE:"):
         do_dispense(line[9:])
+    elif line.startswith("MANUAL:"):
+        do_dispense_manual(line[7:])
 
 def read_uart():
     global uart_buf
@@ -112,9 +114,8 @@ def do_dispense(type_str):
     label = "A+B" if type_str == "AB" else type_str
     write_oled_large("Take meds", 0)
     write_oled_large(label, 2)
-    write_oled_large("{:02d}:{:02d}".format(h, m), 4)
-    write_oled("", 6)
-    write_oled("", 7)
+    write_oled_large(fmt_12h(), 4)
+    write_oled_large("", 6)
 
     music.play(RICKROLL, pin=pin0, wait=False, loop=True)
     while pin1.read_digital() != 0:
@@ -134,6 +135,28 @@ def do_dispense(type_str):
     send_uart("STORAGE:{},{}{}".format(storage_a, storage_b, empty_flag))
     send_uart("DISPENSE_DONE:" + type_str)
     update_oled()
+
+def do_dispense_manual(type_str):
+    global storage_a, storage_b
+    type_str = type_str.strip()
+    if type_str == "A":
+        if storage_a == 0:
+            send_uart("STORAGE:0,{}:EMPTY_A".format(storage_b))
+            return
+        radio.send("DISPENSE:A")
+        storage_a -= 1
+        empty_flag = ":EMPTY_A" if storage_a == 0 else ""
+        send_uart("STORAGE:{},{}{}".format(storage_a, storage_b, empty_flag))
+        send_uart("DISPENSE_DONE:A")
+    elif type_str == "B":
+        if storage_b == 0:
+            send_uart("STORAGE:{},0:EMPTY_B".format(storage_a))
+            return
+        radio.send("DISPENSE:B")
+        storage_b -= 1
+        empty_flag = ":EMPTY_B" if storage_b == 0 else ""
+        send_uart("STORAGE:{},{}{}".format(storage_a, storage_b, empty_flag))
+        send_uart("DISPENSE_DONE:B")
 
 def check_schedules():
     global dispensed_this_minute
@@ -156,7 +179,14 @@ def compute_countdown():
             min_delta = delta
     if min_delta is None:
         return "No sched"
-    return "Next: {}H {:02d}M".format(min_delta // 60, min_delta % 60)
+    return "Nx:{}H {:02d}M".format(min_delta // 60, min_delta % 60)
+
+def fmt_12h():
+    hh = h % 12
+    if hh == 0:
+        hh = 12
+    suffix = "PM" if h >= 12 else "AM"
+    return "{:02d}:{:02d} {}".format(hh, m, suffix)
 
 def read_sensors():
     global last_humi, last_temp
@@ -167,15 +197,14 @@ def read_sensors():
         send_uart("SENSOR:{},{}".format(temp, humi))
 
 def update_oled():
-    write_oled_large("{:02d}:{:02d}:{:02d}".format(h, m, s), 0)
+    write_oled_large(fmt_12h(), 0)
     if last_humi is not None:
         write_oled_large("H:{:.1f}%".format(last_humi), 2)
         write_oled_large("T:{:.1f}C".format(last_temp), 4)
     else:
         write_oled_large("Sensor...", 2)
         write_oled_large("", 4)
-    write_oled(compute_countdown(), 6)
-    write_oled("", 7)
+    write_oled_large(compute_countdown(), 6)
 
 def enter_refill_mode(type_str):
     global storage_a, storage_b
@@ -318,7 +347,7 @@ while True:
         if m != prev_m:
             dispensed_this_minute = False
             prev_m = m
-            check_schedules()
+        check_schedules()
     sensor_timer -= 1
     if sensor_timer <= 0:
         read_sensors()

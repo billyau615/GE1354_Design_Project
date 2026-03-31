@@ -118,7 +118,9 @@ def settings():
 def dispense():
     data = request.get_json(force=True)
     med_type = data.get("type", "A")
-    mqtt_bridge.publish_command({"action": "dispense", "type": med_type})
+    mode = data.get("mode", "normal")
+    action = "manual" if mode == "manual" else "dispense"
+    mqtt_bridge.publish_command({"action": action, "type": med_type})
     return jsonify(ok=True)
 
 

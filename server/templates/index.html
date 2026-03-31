@@ -42,11 +42,33 @@
         {% elif storage[key] <= 2 %}Low — refill soon
         {% else %}&nbsp;{% endif %}
       </small>
-      <button class="btn btn-sm btn-outline-primary mt-2 w-100"
-              onclick="dispense('{{ key|upper }}')">Dispense {{ key|upper }}</button>
     </div>
   </div>
   {% endfor %}
+</div>
+
+<!-- Dispense -->
+<p class="section-title">Dispense</p>
+<div class="row g-3 mb-4">
+  <div class="col-12 col-md-6">
+    <div class="card p-3 h-100">
+      <div class="storage-label mb-2">Normal — buzzer &amp; alert</div>
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-sm btn-primary" onclick="dispense('A','normal')">Type A</button>
+        <button class="btn btn-sm btn-primary" onclick="dispense('B','normal')">Type B</button>
+        <button class="btn btn-sm btn-primary" onclick="dispense('AB','normal')">A + B</button>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-6">
+    <div class="card p-3 h-100">
+      <div class="storage-label mb-2">Manual — silent drop</div>
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-sm btn-outline-secondary" onclick="dispense('A','manual')">Type A</button>
+        <button class="btn btn-sm btn-outline-secondary" onclick="dispense('B','manual')">Type B</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Environment -->
@@ -162,12 +184,13 @@ async function poll() {
   }
 }
 
-async function dispense(type) {
-  if (!confirm('Dispense type ' + type + '?')) return;
+async function dispense(type, mode) {
+  const label = mode === 'manual' ? 'Manual dispense' : 'Dispense';
+  if (!confirm(label + ' type ' + type + '?')) return;
   const res = await fetch('/dispense', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({type})
+    body: JSON.stringify({type, mode})
   });
   const data = await res.json();
   if (data.ok) {
