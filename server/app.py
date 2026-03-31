@@ -140,4 +140,4 @@ if __name__ == "__main__":
     user   = sys.argv[2] if len(sys.argv) > 2 else None
     passwd = sys.argv[3] if len(sys.argv) > 3 else None
     mqtt_bridge.start(broker, broker_user=user, broker_pass=passwd)
-    app.run(host="127.0.0.1", port=5000, debug=False)
+    app.run(host="0.0.0.0", port=5000, debug=False)
