@@ -213,6 +213,10 @@ def enter_refill_mode(type_str):
         clear_oled()
         write_oled("{} has {} left".format(type_str, current), 0)
         write_oled("A=reset B=cancel", 1)
+        while button_a.is_pressed() or button_b.is_pressed():
+            sleep(50)
+        button_a.was_pressed()
+        button_b.was_pressed()
         while True:
             if button_a.was_pressed():
                 if type_str == "A":
