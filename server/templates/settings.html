@@ -2,6 +2,7 @@
 {% block content %}
 <h2 class="mt-4">Settings</h2>
 <form method="post" class="mt-3 w-100" style="max-width: 480px">
+
   <h5>Telegram Notifications</h5>
   <div class="mb-3">
     <label class="form-label">Bot Token</label>
@@ -10,11 +11,23 @@
     <small class="text-muted">Get from <a href="https://t.me/BotFather" target="_blank">@BotFather</a>. Leave blank to keep current value.</small>
   </div>
   <div class="mb-3">
-    <label class="form-label">Your Telegram User ID</label>
+    <label class="form-label">Telegram User ID(s)</label>
     <input type="text" name="telegram_uid" class="form-control"
            value="{{ settings.get('telegram_uid', '') }}"
-           placeholder="e.g. 123456789">
-    <small class="text-muted">Find your ID by messaging <a href="https://t.me/userinfobot" target="_blank">@userinfobot</a>.</small>
+           placeholder="e.g. 123456789 or 123456789,987654321">
+    <small class="text-muted">Separate multiple IDs with commas. Find your ID via <a href="https://t.me/userinfobot" target="_blank">@userinfobot</a>.</small>
+  </div>
+
+  <h5 class="mt-4">Notification Toggles</h5>
+  <div class="form-check mb-2">
+    <input class="form-check-input" type="checkbox" name="notify_env" id="notify_env"
+           {% if settings.get('notify_env', True) %}checked{% endif %}>
+    <label class="form-check-label" for="notify_env">Environment alerts (temperature &amp; humidity)</label>
+  </div>
+  <div class="form-check mb-3">
+    <input class="form-check-input" type="checkbox" name="notify_storage" id="notify_storage"
+           {% if settings.get('notify_storage', True) %}checked{% endif %}>
+    <label class="form-check-label" for="notify_storage">Storage empty alerts</label>
   </div>
 
   <h5 class="mt-4">Alert Thresholds</h5>
@@ -29,6 +42,12 @@
       <input type="number" name="humi_threshold" class="form-control" step="1"
              value="{{ settings.get('humi_threshold', 80.0) }}">
     </div>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Environment Alert Cooldown (seconds)</label>
+    <input type="number" name="alert_cooldown" class="form-control" min="0" step="1"
+           value="{{ settings.get('alert_cooldown', 300) }}">
+    <small class="text-muted">Minimum time between repeated environment alerts. Storage alerts are always sent immediately and ignore this setting.</small>
   </div>
 
   <button type="submit" class="btn btn-primary w-100">Save</button>

@@ -14,7 +14,6 @@ _storage = {"a": 7, "b": 7}
 # Rate-limit timestamps for threshold alerts (per category)
 _last_temp_alert = 0
 _last_humi_alert = 0
-ALERT_COOLDOWN = 300  # seconds
 
 SETTINGS_FILE = "data/settings.json"
 STATE_FILE = "data/state.json"
@@ -91,18 +90,20 @@ def _on_message(client, userdata, msg):
             _sensor["updated"] = now
 
         settings = _load_settings()
-        temp_thresh = settings.get("temp_threshold", 35.0)
-        humi_thresh = settings.get("humi_threshold", 80.0)
+        if settings.get("notify_env", True):
+            temp_thresh = settings.get("temp_threshold", 35.0)
+            humi_thresh = settings.get("humi_threshold", 80.0)
+            cooldown = settings.get("alert_cooldown", 300)
 
-        if payload.get("temp") is not None and payload["temp"] > temp_thresh:
-            if time.time() - _last_temp_alert > ALERT_COOLDOWN:
-                _last_temp_alert = time.time()
-                send_alert(f"[Dispenser] Temperature too high: {payload['temp']}C (threshold: {temp_thresh}C)")
+            if payload.get("temp") is not None and payload["temp"] > temp_thresh:
+                if time.time() - _last_temp_alert > cooldown:
+                    _last_temp_alert = time.time()
+                    send_alert(f"[Dispenser] Temperature too high: {payload['temp']}C (threshold: {temp_thresh}C)")
 
-        if payload.get("humidity") is not None and payload["humidity"] > humi_thresh:
-            if time.time() - _last_humi_alert > ALERT_COOLDOWN:
-                _last_humi_alert = time.time()
-                send_alert(f"[Dispenser] Humidity too high: {payload['humidity']}% (threshold: {humi_thresh}%)")
+            if payload.get("humidity") is not None and payload["humidity"] > humi_thresh:
+                if time.time() - _last_humi_alert > cooldown:
+                    _last_humi_alert = time.time()
+                    send_alert(f"[Dispenser] Humidity too high: {payload['humidity']}% (threshold: {humi_thresh}%)")
 
     elif topic == "dispenser/storage":
         with _lock:
@@ -112,10 +113,12 @@ def _on_message(client, userdata, msg):
                 _storage["b"] = payload["b"]
             _save_state()
 
-        if payload.get("empty_a"):
-            send_alert("[Dispenser] Drug A is now empty. Please refill.")
-        if payload.get("empty_b"):
-            send_alert("[Dispenser] Drug B is now empty. Please refill.")
+        settings = _load_settings()
+        if settings.get("notify_storage", True):
+            if payload.get("empty_a"):
+                send_alert("[Dispenser] Drug A is now empty. Please refill.")
+            if payload.get("empty_b"):
+                send_alert("[Dispenser] Drug B is now empty. Please refill.")
 
     elif topic == "dispenser/dispense_done":
         print(f"[mqtt] dispense done: type={payload.get('type')}")

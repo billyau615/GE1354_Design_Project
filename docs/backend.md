@@ -143,11 +143,19 @@ These are accessed by Flask routes via `get_sensor()` and `get_storage()`, which
 | `dispenser/storage` | Updates `_storage["a"]` and `_storage["b"]`. Writes to `state.json`. Sends Telegram alert if `empty_a` or `empty_b` flag is present. |
 | `dispenser/dispense_done` | Prints to console (no further action currently). |
 
-### Telegram Alert Cooldown
+### Telegram Alert Cooldown & Toggles
 
-To prevent alert flooding when temperature or humidity stays above threshold continuously, each alert category has a separate timestamp (`_last_temp_alert`, `_last_humi_alert`). A new alert is only sent if at least **300 seconds (5 minutes)** have elapsed since the last alert in that category.
+Each alert type can be independently enabled or disabled via the Settings page:
 
-Storage-empty alerts have **no cooldown** — they fire exactly once per empty event (because the EMPTY flag is only sent by MB1 when storage transitions to 0, not on every poll).
+| Setting | Key in settings.json | Default |
+|---|---|---|
+| Environment alerts | `notify_env` | `true` |
+| Storage alerts | `notify_storage` | `true` |
+| Cooldown (seconds) | `alert_cooldown` | `300` |
+
+Environment alerts (temp/humidity) are rate-limited: a new alert fires only if at least `alert_cooldown` seconds have elapsed since the last alert **in that category** (`_last_temp_alert` and `_last_humi_alert` are tracked separately).
+
+Storage-empty alerts **ignore the cooldown entirely** — they fire exactly once per empty event because the `EMPTY_X` flag is only sent by MB1 at the moment storage transitions to 0.
 
 ### Published Topics
 
@@ -170,6 +178,10 @@ A single function `send_alert(message)`.
 4. On network error, prints to console and returns — never raises
 
 This silent-fail design means a misconfigured or unreachable Telegram bot never disrupts the main MQTT processing loop.
+
+### Multiple Recipients
+
+`telegram_uid` in `settings.json` can hold a comma-separated list of user IDs (e.g. `"123456789,987654321"`). `send_alert()` splits on commas and sends to each ID independently. A delivery failure to one recipient does not prevent sending to the others.
 
 ### Alert Messages
 

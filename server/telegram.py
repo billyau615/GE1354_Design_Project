@@ -12,13 +12,16 @@ def send_alert(message: str):
         return
 
     bot_token = settings.get("bot_token", "").strip()
-    telegram_uid = settings.get("telegram_uid", "").strip()
+    if not bot_token:
+        return
 
-    if not bot_token or not telegram_uid:
+    uids = [uid.strip() for uid in settings.get("telegram_uid", "").split(",") if uid.strip()]
+    if not uids:
         return
 
     url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-    try:
-        requests.post(url, json={"chat_id": telegram_uid, "text": message}, timeout=5)
-    except requests.exceptions.RequestException as e:
-        print(f"[telegram] alert failed: {e}")
+    for uid in uids:
+        try:
+            requests.post(url, json={"chat_id": uid, "text": message}, timeout=5)
+        except requests.exceptions.RequestException as e:
+            print(f"[telegram] alert failed for {uid}: {e}")

@@ -104,9 +104,12 @@ def settings():
         bot_token = request.form.get("bot_token", "").strip()
         if bot_token:  # only update if non-empty (avoid wiping on re-save)
             current["bot_token"] = bot_token
+        current["notify_env"] = "notify_env" in request.form
+        current["notify_storage"] = "notify_storage" in request.form
         try:
             current["temp_threshold"] = float(request.form.get("temp_threshold", 35.0))
             current["humi_threshold"] = float(request.form.get("humi_threshold", 80.0))
+            current["alert_cooldown"] = int(request.form.get("alert_cooldown", 300))
         except ValueError:
             pass
         save_json(SETTINGS_FILE, current)

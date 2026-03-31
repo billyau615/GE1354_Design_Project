@@ -145,8 +145,8 @@ function setStorage(key, count) {
 }
 
 function setSensor(data) {
-  document.getElementById('sensor-temp').textContent = data.temp !== null ? data.temp + '°C' : '—';
-  document.getElementById('sensor-humi').textContent = data.humidity !== null ? data.humidity + '%' : '—';
+  document.getElementById('sensor-temp').textContent = data.temp !== null ? data.temp.toFixed(1) + '°C' : '—';
+  document.getElementById('sensor-humi').textContent = data.humidity !== null ? data.humidity.toFixed(1) + '%' : '—';
   document.getElementById('sensor-updated').textContent = data.updated ? 'Last updated: ' + data.updated : 'Not yet received';
 }
 

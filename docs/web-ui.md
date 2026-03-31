@@ -130,8 +130,17 @@ A single form for Telegram notifications and alert thresholds. Maximum width of 
 
 | Field | Description |
 |---|---|
-| Bot Token | The token from @BotFather. Shown as a password field. Leave blank to keep the current token (it is never echoed back to the UI for security). |
-| Telegram User ID | Your numeric Telegram user ID. Obtain it by messaging @userinfobot. |
+| Bot Token | The token from @BotFather. Password field — leave blank to keep the current token. |
+| Telegram User ID(s) | One or more numeric user IDs separated by commas. Alerts are sent to all listed IDs. Find your ID via @userinfobot. |
+
+### Notification Toggles
+
+Two checkboxes to independently enable or disable each alert category:
+
+| Checkbox | Controls |
+|---|---|
+| Environment alerts | Temperature and humidity threshold alerts |
+| Storage empty alerts | Alerts sent when the last pill is dispensed |
 
 ### Alert Thresholds
 
@@ -139,8 +148,7 @@ A single form for Telegram notifications and alert thresholds. Maximum width of 
 |---|---|---|
 | Temperature (°C) | 35.0 | Alert sent if temperature exceeds this value |
 | Humidity (%) | 80.0 | Alert sent if humidity exceeds this value |
-
-Both threshold fields accept decimal input (step 0.5 for temperature, step 1 for humidity).
+| Environment Alert Cooldown (s) | 300 | Minimum seconds between repeated environment alerts. Storage alerts always send immediately and are not affected by this setting. |
 
 Saving the form writes all values to `server/data/settings.json`. The bot token is only updated if the field is non-empty.
 
