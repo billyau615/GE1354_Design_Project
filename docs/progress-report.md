@@ -104,6 +104,9 @@ Full integrated system built across all components:
 | UART | `MANUAL:A/B` — ESP32 → MB1 for silent dispense |
 | MQTT | `action=manual` in `dispenser/command` |
 
+### Tested & Verified
+- Telegram alerts confirmed working (storage empty + threshold exceeded)
+
 ## Up Next
 - Micro:bit #2 servo motor control (hardware pending); radio link testable now via LED matrix feedback
-- Integration testing: boot sequence, schedule trigger, refill, Telegram alerts
+- Integration testing: boot sequence, schedule trigger, refill flow
