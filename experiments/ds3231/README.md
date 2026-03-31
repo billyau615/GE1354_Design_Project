@@ -63,24 +63,26 @@ Flash all three files onto the Micro:bit using a tool such as [Thonny](https://t
 ## Boot Sequence
 
 1. ESP32 connects to WiFi and syncs NTP.
-2. ESP32 sends `TIME:HH:MM:SS` over UART every second.
-3. Micro:bit receives the time, writes it to DS3231 via I2C, and replies `TIME_ACK`.
-4. ESP32 stops sending after receiving `TIME_ACK`.
-5. Micro:bit reads DS3231 every second and displays `HH:MM:SS` on the OLED.
+2. Micro:bit sends `TIME_REQ` to ESP32 via UART.
+3. ESP32 starts sending `TIME:HH:MM:SS` every second.
+4. Micro:bit receives the time, writes it to DS3231 via I2C, and replies `TIME_ACK`.
+5. ESP32 stops sending after receiving `TIME_ACK`.
+6. Micro:bit reads DS3231 every second and displays `HH:MM:SS` on the OLED.
 
 ## Error States
 
 | OLED Message | Cause |
 |---|---|
 | `Waiting NTP...` | Waiting for ESP32 to send time (normal during boot) |
-| `No NTP signal` | No `TIME:` received within 30 seconds — check WiFi/UART wiring |
+| `No NTP signal` | No `TIME:` received within 30 seconds of `TIME_REQ` — check WiFi/UART wiring |
 | `RTC Error` | DS3231 I2C read failed — check wiring and power |
 
 ## UART Protocol
 
 | Direction | Message | Meaning |
 |---|---|---|
-| ESP32 → Micro:bit | `TIME:14:30:00` | Current NTP time |
+| Micro:bit → ESP32 | `TIME_REQ` | Request current NTP time |
+| ESP32 → Micro:bit | `TIME:14:30:00` | Current NTP time (sent every 1s until ACK) |
 | Micro:bit → ESP32 | `TIME_ACK` | Time written to DS3231, ESP32 can stop sending |
 
 ## Notes

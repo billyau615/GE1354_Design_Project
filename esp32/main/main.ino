@@ -31,7 +31,8 @@ WiFiClient   wifiClient;
 PubSubClient mqttClient(wifiClient);
 Preferences  prefs;
 
-bool     init_done     = false;
+bool     req_received  = false;   // MB1 sent TIME_REQ
+bool     init_done     = false;   // MB1 sent TIME_ACK
 unsigned long last_time_send = 0;
 
 char     uart_buf[128];
@@ -85,8 +86,8 @@ void loop() {
     }
     mqttClient.loop();
 
-    // Keep sending time every second until MB1 acknowledges
-    if (!init_done) {
+    // Once MB1 requests time, send every second until acknowledged
+    if (req_received && !init_done) {
         unsigned long now = millis();
         if (now - last_time_send >= 1000) {
             last_time_send = now;
@@ -232,7 +233,12 @@ void read_mb_uart() {
 void handle_mb_line(const char* line) {
     Serial.printf("[uart] recv: %s\n", line);
 
-    if (strncmp(line, "TIME_ACK", 8) == 0) {
+    if (strncmp(line, "TIME_REQ", 8) == 0) {
+        req_received = true;
+        last_time_send = 0;   // send immediately on next loop
+        Serial.println("[uart] TIME_REQ received, starting time broadcast");
+
+    } else if (strncmp(line, "TIME_ACK", 8) == 0) {
         init_done = true;
         Serial.println("[uart] MB1 time synced");
 

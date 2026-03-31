@@ -10,7 +10,8 @@ init_oled()
 clear_oled()
 write_oled("Waiting NTP...", 0)
 
-# ── Wait for TIME: from ESP32 ──────────────────────────────────────────────────
+# ── Request time from ESP32, then wait for TIME: reply ────────────────────────
+uart.write("TIME_REQ\n")
 uart_buf = b''
 elapsed = 0
 ntp_ok = False

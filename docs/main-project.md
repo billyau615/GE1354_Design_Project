@@ -62,8 +62,9 @@ All messages are newline-terminated ASCII.
 | MB→ESP | `STORAGE:7,5` | type A count, type B count |
 | MB→ESP | `STORAGE:0,5:EMPTY_A` | storage update + empty flag (triggers Telegram) |
 | MB→ESP | `DISPENSE_DONE:A` | confirms dispense completed |
-| MB→ESP | `TIME_ACK` | MB1 received time, ESP stops sending |
-| ESP→MB | `TIME:14:30:00` | NTP time sync (sent every 1s until ACK) |
+| MB→ESP | `TIME_REQ` | MB1 requests current time from ESP32 |
+| MB→ESP | `TIME_ACK` | MB1 wrote time to DS3231, ESP stops sending |
+| ESP→MB | `TIME:14:30:00` | NTP time (sent every 1s after TIME_REQ, until ACK) |
 | ESP→MB | `SCHED:14:30:A,15:00:B` | up to 6 comma-separated schedules |
 | ESP→MB | `STORAGE_SET:7,5` | push initial storage counts to MB1 |
 | ESP→MB | `DISPENSE:A` | manual dispense command from web UI |
@@ -127,7 +128,7 @@ All messages are newline-terminated ASCII.
 - Bot token and Telegram UID configured in Settings page
 
 ### Timekeeping (MB1)
-- On every boot, MB1 waits for ESP32 to send `TIME:HH:MM:SS` (NTP-sourced), writes it to the DS3231 RTC over I2C, then replies `TIME_ACK`
+- On every boot, MB1 sends `TIME_REQ` to ESP32; ESP32 starts sending `TIME:HH:MM:SS` every second; MB1 writes the first valid time to DS3231 and replies `TIME_ACK`; ESP32 stops
 - Main loop reads DS3231 every second — no software clock is maintained
 - DS3231 TCXO accuracy: ±2ppm (≈5s/month), eliminating the ~1–2s/hour drift of a software counter
 - DS3231 battery backup (CR2032) retains time across power loss; NTP re-sync on next boot restores accuracy

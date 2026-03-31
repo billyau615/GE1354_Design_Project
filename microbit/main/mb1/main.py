@@ -263,6 +263,7 @@ display.show(Image.CLOCK12)
 
 # Always sync DS3231 from ESP32 NTP on every boot
 write_oled("Waiting NTP...", 0)
+send_uart("TIME_REQ")
 while True:
     if uart.any():
         chunk = uart.read(1)
