@@ -107,6 +107,31 @@ Full integrated system built across all components:
 ### Tested & Verified
 - Telegram alerts confirmed working (storage empty + threshold exceeded)
 
+---
+
+## 1 April 2026
+
+### Dashboard — offline detection & UX
+
+- Device online/offline now detected via dedicated `dispenser/ping` heartbeat (ESP32 publishes every 5s); threshold 15s — max browser latency ~20s with no page reload
+- Sensor read interval reduced from 30s to 15s
+- Sensor last-updated timestamp format changed to `"Apr 01, 2026 14:32:05"` with seconds; font matched to section title
+- IP address hidden when device is offline
+- When offline: storage counts show `- / 7` (grey bar), sensor values show `—`
+- Storage last-updated timestamp removed from dashboard
+
+### Bug fixes
+
+- **Storage resets to 7/7 on device reboot**: root cause was `push_init_to_mb()` publishing `dispenser/storage` from ESP32 NVS defaults (7/7) on every reconnect, overwriting the server's `state.json`. Fixed by removing the MQTT publish from `push_init_to_mb()` — server `state.json` is now the sole source of truth
+
+### Servo calibration — MB2
+
+- Confirmed servo type: JX BLS-HV7146MG (180°, 500–2500µs extended range)
+- Dispenser mechanism: 3D printed 8-spoke rotary wheel; 4 slots used per dispenser
+- Calibrated both Servo #1 (Type A) and Servo #2 (Type B) — identical values
+- `HOME_US = 500`, `MAX_US = 2500`, `STEP_US = 500`, 4 steps (slots 0–4)
+- Calibration documented in `experiments/servo-test/README.md` and `docs/hardware.md`
+
 ## Up Next
-- Micro:bit #2 servo motor control (hardware pending); radio link testable now via LED matrix feedback
+- MB2 main project: integrate servo control using calibrated values, respond to radio commands from MB1
 - Integration testing: boot sequence, schedule trigger, refill flow
