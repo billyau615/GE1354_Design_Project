@@ -14,8 +14,8 @@ from microbit import pin0, button_a, button_b, display, sleep
 #   Button B (hold 1s)  → nudge HOME_US by -10 µs
 #   A + B (hold 1s)     → print current HOME_US and STEP_US to display
 
-HOME_US   = 1500    # resting pulse width (µs) — tune this
-STEP_US   = 250     # push distance (µs) for 45 deg — tune this
+HOME_US   = 1400    # resting pulse width (µs)
+STEP_US   = 500     # push distance (µs) for 45 deg
 HOLD_MS   = 400     # ms to hold at pushed position before returning
 SETTLE_MS = 400     # ms to wait after each servo move
 PERIOD_US = 20000   # 50 Hz — do not change
@@ -40,12 +40,14 @@ sleep(SETTLE_MS)
 display.show("H")
 
 b_counter = 0
+count = 0
 
 while True:
     if button_a.was_pressed() and not button_b.is_pressed():
+        count += 1
         display.show(">")
         dispense()
-        display.show("H")
+        display.show(str(count) if count < 10 else "F")
 
     if button_b.is_pressed():
         b_counter += 1
