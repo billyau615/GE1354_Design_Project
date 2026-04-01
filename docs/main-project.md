@@ -191,5 +191,4 @@ Install via Arduino IDE → Library Manager:
 
 ## Known Limitations
 
-- Servo control (MB2) pending hardware — radio link is functional; MB2 scrolls the received command on its LED matrix and sends `DONE:` back to MB1 so the full flow can be tested without servos
 - No authentication on the web UI
