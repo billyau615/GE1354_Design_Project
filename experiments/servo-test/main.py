@@ -51,13 +51,13 @@ while True:
     sleep(50)
 
 # ── Phase 2: slots 1-5 ────────────────────────────────────────────────────────
-# 5 slots, 4 intervals: slot1=HOME, slot5=MAX
-STEP_US = (MAX_US - HOME_US) // 4
+# home=0, 5 slots, 5 intervals: slot0=HOME, slot5=MAX
+STEP_US = (MAX_US - HOME_US) // 5
 
-slot = 1
+slot = 0
 set_servo(HOME_US)
 sleep(SETTLE_MS)
-display.show("1")
+display.show("0")
 
 b_counter = 0
 
@@ -66,16 +66,16 @@ while True:
     b = button_b.is_pressed()
 
     if a and b:
-        slot = 1
+        slot = 0
         set_servo(HOME_US)
         sleep(SETTLE_MS)
-        display.show("1")
+        display.show("0")
         sleep(800)
     else:
         if button_a.was_pressed():
             if slot < 5:
                 slot += 1
-                set_servo(HOME_US + (slot - 1) * STEP_US)
+                set_servo(HOME_US + slot * STEP_US)
                 sleep(SETTLE_MS)
                 display.show(str(slot))
 
