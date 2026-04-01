@@ -8,7 +8,7 @@ Automated drug dispenser for GE1354 university course. IoT system with embedded 
 
 ## Architecture
 
-- **Micro:bit #1** (MicroPython): Sensor node — DHT20 (I2C 0x38), OLED SSD1306 (I2C 0x3C), passive buzzer (PWM pin1), serial to ESP32
+- **Micro:bit #1** (MicroPython): Sensor node — DHT20 (I2C 0x38), OLED SSD1306 (I2C 0x3C), passive buzzer (PWM P0), DS3231 RTC (I2C 0x68), FC-51 IR sensor (P1), serial to ESP32
 - **Micro:bit #2** (MicroPython): Actuation node — servo motors for dispensing
 - **ESP32** (Arduino C++): WiFi bridge, MQTT client, serial to Micro:bit #1
 - **Web server** (Python): Hosts management UI, MQTT bridge, reverse-proxied
@@ -18,10 +18,10 @@ Data flow: DHT20 → Micro:bit #1 → ESP32 → MQTT → Web Server → Browser.
 
 ## Repository Layout
 
-- `microbit/experiments/` — Small standalone test projects for individual components
-- `microbit/main/` — Final integrated Micro:bit code (not yet created)
-- `esp32/` — ESP32 Arduino firmware (not yet started)
-- `server/` — Python web server + MQTT bridge (not yet started)
+- `experiments/` — Small standalone test projects for individual components
+- `microbit/main/` — Final integrated Micro:bit code (mb1 and mb2)
+- `esp32/main/` — ESP32 Arduino firmware
+- `server/` — Python web server + MQTT bridge
 - `docs/` — Architecture and hardware documentation
 
 ## Development Notes

@@ -37,7 +37,7 @@ Stored in `server/data/`. Created manually or auto-generated on first write.
 |---|---|---|
 | `schedules.json` | JSON array | Medication schedules. Example: `[{"time": "14:30", "type": "A"}]` |
 | `settings.json` | JSON object | Telegram credentials and alert thresholds |
-| `state.json` | JSON object | Last-known storage counts. Example: `{"a": 5, "b": 7}` |
+| `state.json` | JSON object | Last-known storage counts. Example: `{"a": 3, "b": 4}` |
 
 `state.json` is written by `mqtt_bridge.py` whenever a `dispenser/storage` MQTT message is received. It is loaded on server startup so the dashboard shows the correct counts even before the first MQTT message arrives.
 
@@ -129,7 +129,7 @@ Runs as a **background daemon thread** using `paho-mqtt`'s `loop_forever()`. All
 
 ```python
 _sensor  = {"temp": None, "humidity": None, "updated": None, "ip": None}
-_storage = {"a": 7, "b": 7}
+_storage = {"a": 4, "b": 4}
 _ping_ts = 0.0
 ```
 

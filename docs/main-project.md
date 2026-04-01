@@ -10,7 +10,7 @@ This document covers the design decisions, protocols, and file structure for the
 Micro:bit #1 ──UART──► ESP32 ──MQTT──► Broker ──MQTT──► Web Server ──HTTP──► Browser
 (main logic)  ◄──UART──        ◄──MQTT──         ◄──MQTT──
 
-Micro:bit #1 ──radio──► Micro:bit #2  (deferred — servo control)
+Micro:bit #1 ──radio──► Micro:bit #2  (servo control)
              ◄──radio──
 ```
 
@@ -28,7 +28,7 @@ microbit/main/
 │   ├── dht20.py    — DHT20 driver
 │   └── ds3231.py   — DS3231 RTC driver
 └── mb2/
-    └── main.py     — Micro:bit #2: radio listener + servo stub
+    └── main.py     — Micro:bit #2: radio listener + servo control
 
 esp32/main/
 └── main.ino        — WiFi + NTP + MQTT + UART bridge
@@ -59,14 +59,14 @@ All messages are newline-terminated ASCII.
 | Direction | Message | Meaning |
 |---|---|---|
 | MB→ESP | `SENSOR:25.1,60.5` | temperature (°C), humidity (%) |
-| MB→ESP | `STORAGE:7,5` | type A count, type B count |
+| MB→ESP | `STORAGE:4,3` | type A count, type B count |
 | MB→ESP | `STORAGE:0,5:EMPTY_A` | storage update + empty flag (triggers Telegram) |
 | MB→ESP | `DISPENSE_DONE:A` | confirms dispense completed |
 | MB→ESP | `TIME_REQ` | MB1 requests current time from ESP32 |
 | MB→ESP | `TIME_ACK` | MB1 wrote time to DS3231, ESP stops sending |
 | ESP→MB | `TIME:14:30:00` | NTP time (sent every 1s after TIME_REQ, until ACK) |
 | ESP→MB | `SCHED:14:30:A,15:00:B` | comma-separated schedules (server enforces per-type limit of 4) |
-| ESP→MB | `STORAGE_SET:7,5` | push initial storage counts to MB1 |
+| ESP→MB | `STORAGE_SET:4,3` | push initial storage counts to MB1 |
 | ESP→MB | `DISPENSE:A/B/AB` | normal dispense from web UI (triggers buzzer + OLED alert) |
 | ESP→MB | `MANUAL:A/B` | manual (silent) dispense from web UI — no buzzer or OLED alert |
 

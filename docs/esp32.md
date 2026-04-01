@@ -162,7 +162,7 @@ All key events are logged to the USB serial port:
 Connecting WiFi... connected
 Syncing NTP... synced
 [mqtt] connected
-[uart] sent STORAGE_SET:7,7
+[uart] sent STORAGE_SET:4,4
 [uart] recv: TIME_REQ
 [uart] sent TIME:14:30:22
 [uart] recv: TIME_ACK
