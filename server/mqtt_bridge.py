@@ -98,7 +98,7 @@ def _on_message(client, userdata, msg):
         return
 
     if topic == "dispenser/sensor":
-        now = time.strftime("%b %d, %Y %H:%M")
+        now = time.strftime("%b %d, %Y %H:%M:%S")
         with _lock:
             _sensor["temp"] = payload.get("temp")
             _sensor["humidity"] = payload.get("humidity")

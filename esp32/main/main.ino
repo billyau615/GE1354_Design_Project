@@ -217,21 +217,15 @@ void send_time_to_mb() {
 }
 
 void push_init_to_mb() {
-    // Push stored storage counts to MB1 on (re)connect
+    // Push stored storage counts to MB1 on (re)connect via UART only.
+    // Do NOT publish to MQTT here — the server's state.json is the source
+    // of truth and must not be overwritten by ESP32 NVS defaults.
     int a = prefs.getInt("storage_a", 7);
     int b = prefs.getInt("storage_b", 7);
     char line[32];
     snprintf(line, sizeof(line), "STORAGE_SET:%d,%d", a, b);
     Serial1.println(line);
     Serial.printf("[uart] sent %s\n", line);
-
-    // Also publish current storage to MQTT so server has it
-    StaticJsonDocument<64> doc;
-    doc["a"] = a;
-    doc["b"] = b;
-    char mqtt_buf[64];
-    serializeJson(doc, mqtt_buf);
-    mqttClient.publish("dispenser/storage", mqtt_buf);
 }
 
 void read_mb_uart() {

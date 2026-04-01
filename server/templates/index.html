@@ -84,8 +84,8 @@
 <!-- Environment -->
 <p class="section-title d-flex flex-wrap align-items-center gap-2">
   Environment
-  <span class="text-muted fw-normal" style="text-transform:none;letter-spacing:0;font-size:.9rem" id="sensor-updated">
-    {% if sensor.updated %}{{ sensor.updated }}{% else %}Not yet received{% endif %}
+  <span class="fw-normal" style="text-transform:none;letter-spacing:0;font-size:.75rem;color:#9ca3af" id="sensor-updated">
+    {% if sensor.updated %}Last updated: {{ sensor.updated }}{% else %}Not yet received{% endif %}
   </span>
 </p>
 <div class="row g-3 mb-4">
@@ -174,13 +174,13 @@ function setStatus(data) {
   const ip   = document.getElementById('status-ip');
   dot.style.background = data.online ? '#198754' : '#dc3545';
   text.textContent = data.online ? 'Online' : 'Offline';
-  ip.textContent = data.ip ? data.ip : '';
+  ip.textContent = data.online && data.ip ? data.ip : '';
 }
 
 function setSensor(data) {
   document.getElementById('sensor-temp').textContent = data.temp !== null ? data.temp.toFixed(1) + '°C' : '—';
   document.getElementById('sensor-humi').textContent = data.humidity !== null ? data.humidity.toFixed(1) + '%' : '—';
-  document.getElementById('sensor-updated').textContent = data.updated ? data.updated : 'Not yet received';
+  document.getElementById('sensor-updated').textContent = data.updated ? 'Last updated: ' + data.updated : 'Not yet received';
 }
 
 function setCountdown(val) {
