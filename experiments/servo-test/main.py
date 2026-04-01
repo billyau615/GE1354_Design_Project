@@ -39,38 +39,27 @@ set_servo(HOME_US)
 sleep(SETTLE_MS)
 display.show("H")
 
-b_hold = 0
+b_counter = 0
 
 while True:
-    a = button_a.is_pressed()
-    b = button_b.is_pressed()
+    if button_a.was_pressed() and not button_b.is_pressed():
+        display.show(">")
+        dispense()
+        display.show("H")
 
-    if a and b:
-        b_hold += 1
-        if b_hold >= 20:
-            # Show STEP_US on display
-            display.scroll(str(STEP_US), delay=80)
-            display.show("H")
-            b_hold = 0
-            sleep(400)
+    if button_b.is_pressed():
+        b_counter += 1
     else:
-        b_hold = 0
-
-        if button_a.was_pressed():
-            display.show(">")
-            dispense()
-            display.show("H")
-
-        if button_b.was_pressed():
-            # Check if B is still held after was_pressed for direction
-            sleep(300)
-            if button_b.is_pressed():
-                HOME_US -= 10
+        if b_counter > 0:
+            # released — short press = forward, long press = backward
+            if b_counter < 15:
+                HOME_US += 50
             else:
-                HOME_US += 10
+                HOME_US -= 50
             set_servo(HOME_US)
             sleep(SETTLE_MS)
             display.scroll(str(HOME_US), delay=80)
             display.show("H")
+        b_counter = 0
 
     sleep(50)
