@@ -1,6 +1,6 @@
 # Main Project Design
 
-> Last updated: 31 March 2026
+> Last updated: 2 April 2026
 
 This document covers the design decisions, protocols, and file structure for the integrated drug dispenser system.
 
