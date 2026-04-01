@@ -11,7 +11,7 @@
 | DS3231 RTC Module | 1 | I2C (addr `0x68`) | Micro:bit #1 |
 | FC-51 IR Obstacle Sensor | 1 | Digital | Micro:bit #1 |
 | ESP32 | 1 | UART | Micro:bit #1 |
-| Servo Motor(s) | TBD | PWM | Micro:bit #2 |
+| JX BLS-HV7146MG Servo | 2 | PWM (500–2500µs) | Micro:bit #2 |
 
 ## Pin Mappings
 
@@ -29,8 +29,22 @@
 
 | Pin | Connected To | Notes |
 |---|---|---|
-| TBD | Servo(s) | PWM output |
-| TBD | Micro:bit #1 TX/RX | UART communication |
+| P0 | Servo A (Type A dispenser) | PWM output |
+| P1 | Servo B (Type B dispenser) | PWM output |
+
+### Servo Calibration (JX BLS-HV7146MG)
+
+Both servos (#1 and #2) share the same calibration values:
+
+| Parameter | Value | Notes |
+|---|---|---|
+| `HOME_US` | 500µs | Slot 0 — home/resting position |
+| `MAX_US` | 2500µs | Slot 4 — full 180° extent |
+| `STEP_US` | 500µs | Per slot (4 slots total: 0→1→2→3→4) |
+| `PERIOD_US` | 20000µs | 50 Hz PWM signal |
+| Power supply | 6–8.4V | Must NOT use Micro:bit 3V pin |
+| Signal logic | 3.3V | Micro:bit pin direct — compatible |
+| Common GND | Required | Servo PSU GND and Micro:bit GND must be joined |
 
 ### ESP32
 
