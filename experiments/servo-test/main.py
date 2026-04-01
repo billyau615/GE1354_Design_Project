@@ -1,20 +1,22 @@
 from microbit import pin0, button_a, button_b, display, sleep
 
-# Phase 1 (display "F"): find true max pulse width
+# Phase 1 (display "H"): find home position (slot 0)
+#   A       → +50us (move right)
+#   B       → -50us (move left)
+#   A+B     → confirm home, go to phase 2
+#
+# Phase 2 (display "F"): find max position (slot 5)
 #   A       → +50us
 #   B       → -50us
-#   A+B     → confirm, go to phase 2
+#   A+B     → confirm max, go to phase 3
 #
-# Phase 2 (display slot 1-5): 5-slot dispense test
-#   A       → advance to next slot
-#   B short → STEP_US +10 (fix if overshooting)
-#   B long  → STEP_US -10 (fix if undershooting)
-#   A+B     → reset to slot 1
+# Phase 3 (display slot 0-5): test dispensing
+#   A       → next slot
+#   A+B     → reset to home
 
 PERIOD_US = 20000
-HOME_US   = 1000
 SETTLE_MS = 400
-current   = 2000
+current   = 1500   # start at midpoint so we can go either direction
 
 
 def set_servo(us):
@@ -22,9 +24,37 @@ def set_servo(us):
     pin0.write_analog(int(us / PERIOD_US * 1023))
 
 
-# ── Phase 1: find max ──────────────────────────────────────────────────────────
+def nudge(direction):
+    global current
+    current += direction * 50
+    set_servo(current)
+    sleep(SETTLE_MS)
+    display.scroll(str(current), delay=60)
+
+
+# ── Phase 1: find home ────────────────────────────────────────────────────────
 set_servo(current)
 sleep(SETTLE_MS)
+display.show("H")
+
+while True:
+    a = button_a.is_pressed()
+    b = button_b.is_pressed()
+    if a and b:
+        sleep(600)
+        if button_a.is_pressed() and button_b.is_pressed():
+            HOME_US = current
+            display.scroll("ok", delay=80)
+            break
+    elif button_a.was_pressed():
+        nudge(+1)
+        display.show("H")
+    elif button_b.was_pressed():
+        nudge(-1)
+        display.show("H")
+    sleep(50)
+
+# ── Phase 2: find max ─────────────────────────────────────────────────────────
 display.show("F")
 
 while True:
@@ -34,24 +64,17 @@ while True:
         sleep(600)
         if button_a.is_pressed() and button_b.is_pressed():
             MAX_US = current
-            display.scroll(str(MAX_US), delay=80)
+            display.scroll("ok", delay=80)
             break
     elif button_a.was_pressed():
-        current += 50
-        set_servo(current)
-        sleep(SETTLE_MS)
-        display.scroll(str(current), delay=60)
+        nudge(+1)
         display.show("F")
     elif button_b.was_pressed():
-        current -= 50
-        set_servo(current)
-        sleep(SETTLE_MS)
-        display.scroll(str(current), delay=60)
+        nudge(-1)
         display.show("F")
     sleep(50)
 
-# ── Phase 2: slots 1-5 ────────────────────────────────────────────────────────
-# home=0 at HOME_US (rightmost physical), slots 1-5 go right (increasing pulse)
+# ── Phase 3: test slots 0-5 ───────────────────────────────────────────────────
 STEP_US = (MAX_US - HOME_US) // 5
 
 slot = 0
