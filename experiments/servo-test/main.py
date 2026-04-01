@@ -1,14 +1,14 @@
 from microbit import pin0, button_a, button_b, display, sleep
 
 HOME_US   = 500
-MAX_US    = 2000
+MAX_US    = 2500
 STEPS     = 4
-STEP_US   = (MAX_US - HOME_US) // STEPS   # 375us per step
+STEP_US   = (MAX_US - HOME_US) // STEPS   # 500us per step
 PERIOD_US = 20000
 SETTLE_MS = 500
 
-# Slot 0: 500us  Slot 1: 875us  Slot 2: 1250us
-# Slot 3: 1625us  Slot 4: 2000us
+# Slot 0: 500us  Slot 1: 1000us  Slot 2: 1500us
+# Slot 3: 2000us  Slot 4: 2500us
 
 def set_servo(us):
     pin0.set_analog_period_microseconds(PERIOD_US)
