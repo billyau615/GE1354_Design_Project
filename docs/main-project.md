@@ -78,7 +78,7 @@ All messages are newline-terminated ASCII.
 
 | Direction | Topic | Payload |
 |---|---|---|
-| ESP→Broker | `dispenser/sensor` | `{"temp": 25.1, "humidity": 60.5}` |
+| ESP→Broker | `dispenser/sensor` | `{"temp": 25.1, "humidity": 60.5, "ip": "192.168.1.42"}` |
 | ESP→Broker | `dispenser/storage` | `{"a": 7, "b": 5}` or `{"a": 0, "b": 5, "empty_a": true}` |
 | ESP→Broker | `dispenser/dispense_done` | `{"type": "A"}` |
 | Server→Broker | `dispenser/command` | `{"action": "dispense", "type": "A"}` or `{"action": "manual", "type": "A"}` |
@@ -143,7 +143,7 @@ All four lines use `write_oled_large` (2× scale, 16px tall). Max ~10 chars per 
 
 | Pages | Content | Example |
 |---|---|---|
-| 0–1 | Current time (12-hour) | `12:30 PM` |
+| 0–1 | Current time (12-hour) | `1:30 PM` (no leading zero) |
 | 2–3 | Humidity | `H:60.5%` |
 | 4–5 | Temperature | `T:25.1C` |
 | 6–7 | Countdown to next dose | `Nx:1H 25M` or `No sched` |

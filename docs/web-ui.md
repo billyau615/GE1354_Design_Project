@@ -34,6 +34,16 @@ On narrow screens the navbar collapses into a hamburger menu.
 
 The main page. It displays live data and dispense controls. Data is automatically refreshed every **5 seconds** via JavaScript `fetch()` calls — no page reload required.
 
+### Section: Device
+
+A single card showing the ESP32 connection status, updated every 5 seconds:
+
+- **Status dot** — green (`#198754`) if online, red (`#dc3545`) if offline
+- **Status text** — `"Online"` or `"Offline"`
+- **IP address** — shown beside the status text once the first sensor message is received
+
+The device is considered **online** if a `dispenser/sensor` MQTT message has been received within the last 90 seconds. Since the sensor publishes every 30 seconds, two missed messages trigger offline status.
+
 ### Section: Storage
 
 Two cards (one per medication type) showing:
@@ -49,7 +59,7 @@ Two cards (one per medication type) showing:
   - `"Empty — please refill"` (0 pills, red)
   - Hidden when stock is sufficient
 
-Both cards and their progress bars update in real-time every 5 seconds by polling `/api/storage`.
+A **"Last updated: DD/MM HH:MM"** timestamp appears in the Storage section heading, showing when the storage count was last changed by a dispense or refill event. Both cards and their progress bars update every 5 seconds by polling `/api/storage`.
 
 ### Section: Dispense
 
@@ -160,7 +170,8 @@ The dashboard uses a single `poll()` function that runs on page load and then ev
 
 | Endpoint | Returns | Used for |
 |---|---|---|
-| `GET /api/storage` | `{"a": 5, "b": 7}` | Storage cards and progress bars |
+| `GET /api/storage` | `{"a": 5, "b": 7, "updated": "01/04 14:32"}` | Storage cards, progress bars, last-updated label |
+| `GET /api/status` | `{"online": true, "ip": "192.168.1.42", "last_seen": "14:32:05"}` | Device status dot and IP |
 | `GET /api/sensor` | `{"temp": 28.3, "humidity": 62.5, "updated": "14:32:05"}` | Environment cards and timestamp |
 | `GET /api/countdown` | `{"countdown": "1H 25M"}` or `{"countdown": null}` | Next-dose badge |
 
@@ -176,7 +187,7 @@ Styles are defined in `base.html` and shared across all pages.
 
 | Class | Used for |
 |---|---|
-| `.storage-count` | Large bold number (2.8rem) in storage cards |
+| `.storage-count` | Large bold number (3.2rem) in storage cards |
 | `.storage-label` | Small uppercase label (0.85rem) above the count |
 | `.sensor-val` | Large value (2rem, `white-space: nowrap`) in environment cards |
 | `.section-title` | Small uppercase section headings (0.75rem, letter-spaced) |

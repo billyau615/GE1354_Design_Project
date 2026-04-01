@@ -139,6 +139,7 @@ Entered by holding button A (Type A) or button B (Type B) for approximately 1 se
 
 **If pills remain** when entering refill mode:
 - OLED shows `"X has Y left"` and `"A=reset B=cancel"`
+- The code waits for both buttons to be fully released (drains `was_pressed()` state) before entering the confirm loop, preventing the long-press release from immediately dismissing the screen
 - Button A confirms zero-reset; Button B cancels without changes
 
 **Refill counting loop:**
@@ -173,7 +174,7 @@ The SSD1306 is a 128×64 pixel display divided into 8 horizontal pages (each 8 p
 
 | Pages | Content | Example | Update rate |
 |---|---|---|---|
-| 0–1 | Current time (12-hour, AM/PM) | `12:30 PM` | Every second |
+| 0–1 | Current time (12-hour, AM/PM) | `1:30 PM` (no leading zero) | Every second |
 | 2–3 | Humidity | `H:62.5%` | Every 30 seconds |
 | 4–5 | Temperature | `T:28.3C` | Every 30 seconds |
 | 6–7 | Countdown to next dose | `Nx:1H 25M` or `No sched` | Every second |

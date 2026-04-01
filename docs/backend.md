@@ -68,9 +68,15 @@ The server-side render sets the initial state of the page. JavaScript then takes
 
 #### `GET /api/storage`
 
-Returns current storage counts as JSON: `{"a": 5, "b": 7}`.
+Returns current storage counts and last update time: `{"a": 5, "b": 7, "updated": "01/04 14:32"}`.
 
-Data comes from `mqtt_bridge.get_storage()`, which holds the last value received via `dispenser/storage` MQTT (or from `state.json` at startup). This endpoint is polled by the dashboard every **5 seconds**.
+`updated` is `null` if no storage MQTT message has been received since server start (i.e. the value came from `state.json`). Polled every **5 seconds** by the dashboard.
+
+#### `GET /api/status`
+
+Returns device online status: `{"online": true, "ip": "192.168.1.42", "last_seen": "14:32:05"}`.
+
+`online` is `true` if a `dispenser/sensor` MQTT message was received within the last **90 seconds**. `ip` and `last_seen` are `null` until the first sensor message arrives. Polled every **5 seconds** by the dashboard.
 
 #### `GET /api/sensor`
 
@@ -122,15 +128,19 @@ Runs as a **background daemon thread** using `paho-mqtt`'s `loop_forever()`. All
 ### Shared State
 
 ```python
-_sensor  = {"temp": None, "humidity": None, "updated": None}
-_storage = {"a": 7, "b": 7}
+_sensor  = {"temp": None, "humidity": None, "updated": None, "updated_ts": 0, "ip": None}
+_storage = {"a": 7, "b": 7, "updated": None}
 ```
 
-These are accessed by Flask routes via `get_sensor()` and `get_storage()`, which return shallow copies under the lock.
+- `_sensor["updated_ts"]` is a Unix timestamp (float) used to compute device online status
+- `_sensor["ip"]` is populated from the `ip` field in the MQTT sensor payload
+- `_storage["updated"]` is a `DD/MM HH:MM` string set whenever storage changes
+
+These are accessed by Flask routes via `get_sensor()`, `get_storage()`, and `get_status()`, which return shallow copies under the lock.
 
 ### Startup (`start()`)
 
-1. Loads `state.json` and pre-populates `_storage` with persisted counts
+1. Loads `state.json` and pre-populates `_storage` with persisted counts (keys `"a"` and `"b"`)
 2. Creates a `paho.mqtt.Client` with client ID `"dispenser-server"`
 3. Sets username/password if provided
 4. Connects to the broker and starts `loop_forever()` in a daemon thread
@@ -139,7 +149,7 @@ These are accessed by Flask routes via `get_sensor()` and `get_storage()`, which
 
 | Topic | Handler behaviour |
 |---|---|
-| `dispenser/sensor` | Updates `_sensor` with temp, humidity, timestamp. Checks both values against thresholds from `settings.json`. Sends Telegram alert if threshold exceeded and cooldown has elapsed. |
+| `dispenser/sensor` | Updates `_sensor` with temp, humidity, IP address, HH:MM:SS timestamp, and Unix timestamp. Checks values against thresholds. Sends Telegram alert if threshold exceeded and cooldown has elapsed. |
 | `dispenser/storage` | Updates `_storage["a"]` and `_storage["b"]`. Writes to `state.json`. Sends Telegram alert if `empty_a` or `empty_b` flag is present. |
 | `dispenser/dispense_done` | Prints to console (no further action currently). |
 

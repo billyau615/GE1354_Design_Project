@@ -136,7 +136,7 @@ Bytes are read one at a time from Serial1 into a 128-byte buffer. On `\n` or `\r
 |---|---|
 | `TIME_REQ` | Sets `req_received = true`; resets timer so next send is immediate |
 | `TIME_ACK` | Sets `init_done = true`; time broadcasts cease |
-| `SENSOR:temp,humi` | Parses two floats; publishes `{"temp": x, "humidity": y}` to `dispenser/sensor` |
+| `SENSOR:temp,humi` | Parses two floats; publishes `{"temp": x, "humidity": y, "ip": "192.168.x.x"}` to `dispenser/sensor` |
 | `STORAGE:a,b[:EMPTY_X]` | Parses counts; writes to NVS; publishes to `dispenser/storage` with optional `empty_a`/`empty_b` flags |
 | `DISPENSE_DONE:type` | Publishes `{"type": "A"}` to `dispenser/dispense_done` |
 
@@ -146,7 +146,7 @@ Bytes are read one at a time from Serial1 into a 128-byte buffer. On `\n` or `\r
 
 | Topic | Payload | Trigger |
 |---|---|---|
-| `dispenser/sensor` | `{"temp": 25.1, "humidity": 60.5}` | On each `SENSOR:` UART message from MB1 (~every 30s) |
+| `dispenser/sensor` | `{"temp": 25.1, "humidity": 60.5, "ip": "192.168.1.42"}` | On each `SENSOR:` UART message from MB1 (~every 30s) |
 | `dispenser/storage` | `{"a": 7, "b": 5}` or `{"a": 0, "b": 5, "empty_a": true}` | On `STORAGE:` UART message; also on connect via `push_init_to_mb()` |
 | `dispenser/dispense_done` | `{"type": "A"}` | On `DISPENSE_DONE:` UART message |
 
