@@ -1,6 +1,6 @@
 # ESP32 — Component Documentation
 
-> Last updated: 31 March 2026
+> Last updated: 2 April 2026
 
 The ESP32 acts as a **network bridge** between Micro:bit #1 and the MQTT broker. It handles WiFi connectivity, NTP time synchronisation, MQTT publish/subscribe, and bidirectional UART relay to MB1. It also persists storage counts across reboots using its internal NVS flash.
 
