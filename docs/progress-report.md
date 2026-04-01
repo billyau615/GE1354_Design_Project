@@ -87,7 +87,7 @@ Full integrated system built across all components:
 ### MB1 — Source size
 
 - All comments stripped from MB1 `.py` files to reduce combined source from ~20 KB to ~16 KB
-- Files must be flashed via **Thonny** (View → Files → Upload to /), not the web editor
+- Files can be flashed via the **Micro:bit web editor** or **Thonny** (View → Files → Upload to /)
 
 ### Web dashboard
 
@@ -117,46 +117,48 @@ Full integrated system built across all components:
 - Sensor read interval reduced from 30s to 15s
 - Sensor last-updated timestamp format changed to `"Apr 01, 2026 14:32:05"` with seconds; font matched to section title
 - IP address hidden when device is offline
-- When offline: storage counts show `- / 4` (grey bar), sensor values show `—`
+- When offline: storage counts show `- / 7` (grey bar), sensor values show `—`
 - Storage last-updated timestamp removed from dashboard
 
 ### Bug fixes
 
-- **Storage resets to 4/4 on device reboot**: root cause was `push_init_to_mb()` publishing `dispenser/storage` from ESP32 NVS defaults on every reconnect, overwriting the server's `state.json`. Fixed by removing the MQTT publish from `push_init_to_mb()` — server `state.json` is now the sole source of truth
+- **Storage resets to 7/7 on device reboot**: root cause was `push_init_to_mb()` publishing `dispenser/storage` from ESP32 NVS defaults on every reconnect, overwriting the server's `state.json`. Fixed by removing the MQTT publish from `push_init_to_mb()` — server `state.json` is now the sole source of truth
 
 ### Servo calibration — MB2
 
-- Confirmed servo type: JX BLS-HV7146MG (180°, 500–2500µs extended range)
-- Dispenser mechanism: 3D printed 8-spoke rotary wheel; 4 slots used per dispenser
+- Confirmed servo type: JX BLS-HV7146MG — discovered during testing that it is a **180° servo** (not 360° as initially assumed); physical range 500–2500µs extended
+- Dispenser mechanism: 3D printed 8-spoke rotary wheel; tested with one servo at a time on P0
 - Calibrated both Servo #1 (Type A) and Servo #2 (Type B) — identical values
 - `HOME_US = 500`, `MAX_US = 2500`, `STEP_US = 500`, 4 steps (slots 0–4)
+- The 180° constraint limits each wheel to **4 usable slots** (previously assumed 7) — storage capacity and all related logic will need to be updated accordingly
 - Calibration documented in `experiments/servo-test/README.md` and `docs/hardware.md`
 
 ---
 
 ## 2 April 2026
 
+Based on the 180° servo limitation discovered during calibration, the storage capacity was revised from 7 to 4 pills per type. The servo is now fully integrated into the main project with all dependent components updated to reflect the new capacity.
+
 ### MB2 — Servo integration (full rewrite)
 
-- Rewrote `microbit/main/mb2/main.py` with calibrated values: `HOME_US=500`, `STEP_US=500`, `MAX_SLOTS=4`, `PERIOD_US=20000`; Servo A on P0, Servo B on P1
-- Servo does **not** home on startup — waits for `INIT:a,b` from MB1 to restore position from storage counts (`slot = 4 - remaining`)
+- Rewrote `microbit/main/mb2/main.py` using calibrated values: `HOME_US=500`, `STEP_US=500`, `MAX_SLOTS=4`, `PERIOD_US=20000`; Servo A on P0, Servo B on P1
+- Servo does **not** home on startup — waits for `INIT:a,b` from MB1 to restore position from storage counts (`slot = 4 - remaining`), so remaining pills are not disrupted on reboot
 - Radio commands handled: `INIT:a,b`, `DISPENSE:A/B/AB`, `REFILL:A/B`, `SERVO_STEP:A/B`
+- Refill loads pills through the fixed dispense hole: `REFILL` resets servo to HOME, then `SERVO_STEP` advances one slot per button press as the user drops each pill
 - Button A/B kept for manual slot advance during testing
 
 ### MB1 — Storage cap + refill improvements
 
-- Storage defaults changed: `storage_a = 7` → `4`, `storage_b = 7` → `4`
+- Storage defaults changed: `storage_a/b = 7` → `4`
 - Refill loop cap: `while slot_count < 7` → `< 4`
 - After STORAGE_SET received at boot, MB1 now sends `INIT:a,b` radio to MB2
-- Refill mode now sends `REFILL:X` before the count loop (resets servo to HOME) and `SERVO_STEP:X` on each button press (advances servo one slot per pill loaded through dispense hole)
+- Refill mode sends `REFILL:X` before the count loop and `SERVO_STEP:X` on each button press
 
 ### System — 4-pill capacity throughout
 
-- Dashboard storage: `/7` → `/4`; low warning threshold: `≤ 2` → `≤ 1`
-- Schedule page: per-type limit of 4 (A and B independently); shows `Type A: X/4 | Type B: X/4`; type selector hides types at max
-- ESP32 NVS defaults: `storage_a/b` → 4
-- `mqtt_bridge.py` in-memory default: `{"a": 4, "b": 4}`
-- All docs updated: `mb1.md`, `web-ui.md`, `main-project.md`, `hardware.md`
+- Dashboard storage: `/7` → `/4`; low warning threshold revised to 1 pill remaining
+- Schedule page: per-type limit of 4 (A and B independently); shows `Type A: X/4 | Type B: X/4`; type dropdown hides types at their limit
+- ESP32 NVS defaults, `mqtt_bridge.py` in-memory defaults, all docs updated to reflect capacity of 4
 
 ## Up Next
 - Integration testing: boot sequence, INIT restore, schedule trigger, refill flow
