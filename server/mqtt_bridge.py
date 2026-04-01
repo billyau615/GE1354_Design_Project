@@ -152,8 +152,8 @@ def start(broker_host: str, broker_port: int = 1883,
         with open(STATE_FILE) as f:
             saved = json.load(f)
             with _lock:
-                _storage["a"] = saved.get("a", 7)
-                _storage["b"] = saved.get("b", 7)
+                _storage["a"] = saved.get("a", 4)
+                _storage["b"] = saved.get("b", 4)
     except Exception:
         pass
 

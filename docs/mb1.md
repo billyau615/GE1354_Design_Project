@@ -60,7 +60,7 @@ Immediately after time sync, MB1 polls UART for up to 3 seconds waiting for a `S
 
 ### 3. Storage count receive (non-blocking, 3-second timeout)
 
-Similarly, MB1 polls for `STORAGE_SET:a,b` for up to 3 seconds. The ESP32 reads its NVS flash on connect and sends the persisted counts. If nothing arrives, storage defaults to 7/7.
+Similarly, MB1 polls for `STORAGE_SET:a,b` for up to 3 seconds. The ESP32 reads its NVS flash on connect and sends the persisted counts. If nothing arrives, storage defaults to 4/4.
 
 After all three waits, the OLED is cleared, the first DHT20 reading is taken, and the main loop starts.
 
@@ -74,7 +74,7 @@ The main loop runs once per second (`sleep(1000)` at the end). Each iteration:
 2. **`check_long_press()`** — detects held buttons for refill mode entry
 3. **`read_ds3231()`** — reads current time from RTC; if successful, updates `h/m/s` and checks if the minute has changed
 4. **`check_schedules()`** — compares current `h:m` against all stored schedules; fires dispense if match found and not yet dispensed this minute
-5. **Sensor timer** — counts down; when it reaches 0, reads DHT20 and resets to 30 (i.e., sensor read every ~30 seconds)
+5. **Sensor timer** — counts down; when it reaches 0, reads DHT20 and resets to 15 (i.e., sensor read every ~15 seconds)
 6. **`update_oled()`** — redraws all four OLED lines
 
 ---

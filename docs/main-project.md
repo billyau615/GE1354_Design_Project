@@ -65,7 +65,7 @@ All messages are newline-terminated ASCII.
 | MB→ESP | `TIME_REQ` | MB1 requests current time from ESP32 |
 | MB→ESP | `TIME_ACK` | MB1 wrote time to DS3231, ESP stops sending |
 | ESP→MB | `TIME:14:30:00` | NTP time (sent every 1s after TIME_REQ, until ACK) |
-| ESP→MB | `SCHED:14:30:A,15:00:B` | up to 6 comma-separated schedules |
+| ESP→MB | `SCHED:14:30:A,15:00:B` | comma-separated schedules (server enforces per-type limit of 4) |
 | ESP→MB | `STORAGE_SET:7,5` | push initial storage counts to MB1 |
 | ESP→MB | `DISPENSE:A/B/AB` | normal dispense from web UI (triggers buzzer + OLED alert) |
 | ESP→MB | `MANUAL:A/B` | manual (silent) dispense from web UI — no buzzer or OLED alert |

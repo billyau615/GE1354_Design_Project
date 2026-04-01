@@ -7,7 +7,7 @@
 | Micro:bit V2 | 2 | — | — |
 | DHT20 (temp/humidity sensor) | 1 | I2C (addr `0x38`) | Micro:bit #1 |
 | OLED Display (SSD1306, 128x64) | 1 | I2C (addr `0x3C`) | Micro:bit #1 |
-| Passive Buzzer (無源) | 2 | PWM | Micro:bit #1 |
+| Passive Buzzer (無源) | 1 | PWM | Micro:bit #1 |
 | DS3231 RTC Module | 1 | I2C (addr `0x68`) | Micro:bit #1 |
 | FC-51 IR Obstacle Sensor | 1 | Digital | Micro:bit #1 |
 | ESP32 | 1 | UART | Micro:bit #1 |

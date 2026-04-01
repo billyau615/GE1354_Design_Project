@@ -167,8 +167,8 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
             snprintf(line, sizeof(line), "MANUAL:%s", type);
             Serial1.println(line);
         } else if (strcmp(action, "set_storage") == 0) {
-            int a = doc["a"] | 7;
-            int b = doc["b"] | 7;
+            int a = doc["a"] | 4;
+            int b = doc["b"] | 4;
             char line[32];
             snprintf(line, sizeof(line), "STORAGE_SET:%d,%d", a, b);
             Serial1.println(line);
