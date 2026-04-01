@@ -31,7 +31,7 @@
 </div>
 
 <!-- Storage -->
-<p class="section-title">Storage <small id="storage-updated" class="text-muted fw-normal ms-1" style="font-size:.75rem;text-transform:none;letter-spacing:0"></small></p>
+<p class="section-title">Storage</p>
 <div class="row g-3 mb-4">
   {% for label, key in [("Type A", "a"), ("Type B", "b")] %}
   <div class="col-6 col-md-3">
@@ -84,9 +84,9 @@
 <!-- Environment -->
 <p class="section-title d-flex flex-wrap align-items-center gap-2">
   Environment
-  <small class="text-muted fw-normal" style="text-transform:none;letter-spacing:0" id="sensor-updated">
-    {% if sensor.updated %}Last updated: {{ sensor.updated }}{% else %}Not yet received{% endif %}
-  </small>
+  <span class="text-muted fw-normal" style="text-transform:none;letter-spacing:0;font-size:.9rem" id="sensor-updated">
+    {% if sensor.updated %}{{ sensor.updated }}{% else %}Not yet received{% endif %}
+  </span>
 </p>
 <div class="row g-3 mb-4">
   <div class="col-6 col-md-2">
@@ -139,7 +139,7 @@ const connModal = new bootstrap.Modal(document.getElementById('connModal'));
 let failCount = 0;
 const MAX_FAILS = 3;
 
-function setStorage(key, count, updated) {
+function setStorage(key, count) {
   const pct = Math.round(count / 7 * 100);
   const color = count === 0 ? '#dc3545' : count <= 2 ? '#ffc107' : '#198754';
   const textClass = count === 0 ? 'text-danger' : count <= 2 ? 'text-warning' : 'invisible';
@@ -152,9 +152,20 @@ function setStorage(key, count, updated) {
   const warn = document.getElementById('storage-warn-' + key);
   warn.className = 'mt-1 ' + textClass;
   warn.textContent = warnText;
-  if (updated) {
-    document.getElementById('storage-updated').textContent = 'Last updated: ' + updated;
-  }
+}
+
+function setOffline() {
+  ['a', 'b'].forEach(key => {
+    document.getElementById('storage-count-' + key).textContent = '- / 7';
+    const bar = document.getElementById('storage-bar-' + key);
+    bar.style.width = '0%';
+    bar.style.backgroundColor = '#6c757d';
+    const warn = document.getElementById('storage-warn-' + key);
+    warn.className = 'mt-1 invisible';
+    warn.textContent = '\u00a0';
+  });
+  document.getElementById('sensor-temp').textContent = '—';
+  document.getElementById('sensor-humi').textContent = '—';
 }
 
 function setStatus(data) {
@@ -169,7 +180,7 @@ function setStatus(data) {
 function setSensor(data) {
   document.getElementById('sensor-temp').textContent = data.temp !== null ? data.temp.toFixed(1) + '°C' : '—';
   document.getElementById('sensor-humi').textContent = data.humidity !== null ? data.humidity.toFixed(1) + '%' : '—';
-  document.getElementById('sensor-updated').textContent = data.updated ? 'Last updated: ' + data.updated : 'Not yet received';
+  document.getElementById('sensor-updated').textContent = data.updated ? data.updated : 'Not yet received';
 }
 
 function setCountdown(val) {
@@ -197,11 +208,15 @@ async function poll() {
     const cd       = await cdRes.json();
     const status   = await stRes.json();
 
-    setStorage('a', storage.a, storage.updated);
-    setStorage('b', storage.b, storage.updated);
-    setSensor(sensor);
-    setCountdown(cd.countdown);
     setStatus(status);
+    setCountdown(cd.countdown);
+    if (status.online) {
+      setStorage('a', storage.a);
+      setStorage('b', storage.b);
+      setSensor(sensor);
+    } else {
+      setOffline();
+    }
     failCount = 0;
   } catch (_) {
     failCount++;

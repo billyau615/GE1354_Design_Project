@@ -8,8 +8,9 @@ from telegram import send_alert
 
 # ── Shared state ──────────────────────────────────────────────────────────────
 _lock = threading.Lock()
-_sensor = {"temp": None, "humidity": None, "updated": None, "updated_ts": 0, "ip": None}
-_storage = {"a": 7, "b": 7, "updated": None}
+_sensor = {"temp": None, "humidity": None, "updated": None, "ip": None}
+_storage = {"a": 7, "b": 7}
+_ping_ts = 0.0
 
 # Rate-limit timestamps for threshold alerts (per category)
 _last_temp_alert = 0
@@ -35,9 +36,9 @@ def get_storage():
 
 def get_status():
     with _lock:
-        ts = _sensor["updated_ts"]
-        online = (time.time() - ts) < 90 if ts else False
-        return {"online": online, "ip": _sensor["ip"], "last_seen": _sensor["updated"]}
+        ts = _ping_ts
+        online = (time.time() - ts) < 15 if ts else False
+        return {"online": online, "ip": _sensor["ip"]}
 
 
 def publish_command(payload: dict):
@@ -76,26 +77,32 @@ def _on_connect(client, userdata, flags, rc):
         client.subscribe("dispenser/sensor")
         client.subscribe("dispenser/storage")
         client.subscribe("dispenser/dispense_done")
+        client.subscribe("dispenser/ping")
     else:
         print(f"[mqtt] connect failed, rc={rc}")
 
 
 def _on_message(client, userdata, msg):
-    global _last_temp_alert, _last_humi_alert
+    global _last_temp_alert, _last_humi_alert, _ping_ts
 
     topic = msg.topic
+
+    if topic == "dispenser/ping":
+        with _lock:
+            _ping_ts = time.time()
+        return
+
     try:
         payload = json.loads(msg.payload.decode())
     except Exception:
         return
 
     if topic == "dispenser/sensor":
-        now = time.strftime("%H:%M:%S")
+        now = time.strftime("%b %d, %Y %H:%M")
         with _lock:
             _sensor["temp"] = payload.get("temp")
             _sensor["humidity"] = payload.get("humidity")
             _sensor["updated"] = now
-            _sensor["updated_ts"] = time.time()
             if payload.get("ip"):
                 _sensor["ip"] = payload.get("ip")
 
@@ -121,7 +128,6 @@ def _on_message(client, userdata, msg):
                 _storage["a"] = payload["a"]
             if "b" in payload:
                 _storage["b"] = payload["b"]
-            _storage["updated"] = time.strftime("%d/%m %H:%M")
             _save_state()
 
         settings = _load_settings()

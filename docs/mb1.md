@@ -155,7 +155,7 @@ On exit, the new count is saved to `storage_a`/`storage_b` and reported via UART
 
 ### DHT20 (temperature and humidity)
 
-- Read every **30 seconds** (30 main loop iterations of 1 second each)
+- Read every **15 seconds** (15 main loop iterations of 1 second each)
 - On success: values stored in `last_temp`, `last_humi`; sent to ESP32 as `SENSOR:temp,humi`
 - On failure: previous values retained; OLED shows `"Sensor..."` until first successful read
 

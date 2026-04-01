@@ -78,6 +78,7 @@ All messages are newline-terminated ASCII.
 
 | Direction | Topic | Payload |
 |---|---|---|
+| ESP→Broker | `dispenser/ping` | `"1"` (every 5 s; server uses for online detection) |
 | ESP→Broker | `dispenser/sensor` | `{"temp": 25.1, "humidity": 60.5, "ip": "192.168.1.42"}` |
 | ESP→Broker | `dispenser/storage` | `{"a": 7, "b": 5}` or `{"a": 0, "b": 5, "empty_a": true}` |
 | ESP→Broker | `dispenser/dispense_done` | `{"type": "A"}` |

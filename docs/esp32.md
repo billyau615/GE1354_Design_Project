@@ -64,7 +64,8 @@ The loop runs continuously with no fixed delay. Each iteration:
 
 1. **MQTT keepalive** — if disconnected, calls `reconnect_mqtt()` (5-second blocking delay per attempt); if connected, calls `mqttClient.loop()` to process incoming messages and maintain the heartbeat
 2. **Time broadcast** — if `req_received` is true and `init_done` is false, checks whether 1 second has elapsed since the last send; if so, calls `send_time_to_mb()`
-3. **`read_mb_uart()`** — reads any available bytes from Serial1 and dispatches complete lines
+3. **Heartbeat ping** — if connected and 5 seconds have elapsed since the last ping, publishes `"1"` to `dispenser/ping`. The server uses this to determine online/offline status with a 15-second timeout.
+4. **`read_mb_uart()`** — reads any available bytes from Serial1 and dispatches complete lines
 
 ---
 
@@ -146,7 +147,8 @@ Bytes are read one at a time from Serial1 into a 128-byte buffer. On `\n` or `\r
 
 | Topic | Payload | Trigger |
 |---|---|---|
-| `dispenser/sensor` | `{"temp": 25.1, "humidity": 60.5, "ip": "192.168.1.42"}` | On each `SENSOR:` UART message from MB1 (~every 30s) |
+| `dispenser/ping` | `"1"` | Every **5 seconds** while connected; used by server to detect online/offline |
+| `dispenser/sensor` | `{"temp": 25.1, "humidity": 60.5, "ip": "192.168.1.42"}` | On each `SENSOR:` UART message from MB1 (~every 15s) |
 | `dispenser/storage` | `{"a": 7, "b": 5}` or `{"a": 0, "b": 5, "empty_a": true}` | On `STORAGE:` UART message; also on connect via `push_init_to_mb()` |
 | `dispenser/dispense_done` | `{"type": "A"}` | On `DISPENSE_DONE:` UART message |
 

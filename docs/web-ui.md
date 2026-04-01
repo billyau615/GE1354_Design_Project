@@ -42,7 +42,7 @@ A single card showing the ESP32 connection status, updated every 5 seconds:
 - **Status text** — `"Online"` or `"Offline"`
 - **IP address** — shown beside the status text once the first sensor message is received
 
-The device is considered **online** if a `dispenser/sensor` MQTT message has been received within the last 90 seconds. Since the sensor publishes every 30 seconds, two missed messages trigger offline status.
+The device is considered **online** if a `dispenser/ping` MQTT heartbeat was received within the last **15 seconds**. The ESP32 publishes a ping every 5 seconds; two missed pings plus the 5 s browser poll gives a maximum offline detection latency of ~20 seconds without a page reload.
 
 ### Section: Storage
 
@@ -59,7 +59,7 @@ Two cards (one per medication type) showing:
   - `"Empty — please refill"` (0 pills, red)
   - Hidden when stock is sufficient
 
-A **"Last updated: DD/MM HH:MM"** timestamp appears in the Storage section heading, showing when the storage count was last changed by a dispense or refill event. Both cards and their progress bars update every 5 seconds by polling `/api/storage`.
+Both cards and their progress bars update every 5 seconds by polling `/api/storage`. When the device is offline, both counts display as `- / 7` with a grey bar.
 
 ### Section: Dispense
 
@@ -86,9 +86,9 @@ Two cards showing the latest sensor reading from the DHT20:
 | Temperature | e.g. `28.3°C` | Red (`text-danger`) |
 | Humidity | e.g. `62.5%` | Blue (`text-info`) |
 
-Below the section title, a small timestamp shows when the reading was last received (e.g. `"Last updated: 14:32:05"`). If no reading has been received since the server started, it shows `"Not yet received"`.
+Below the section title, a timestamp shows when the reading was last received (e.g. `"Apr 01, 2026 14:32"`). If no reading has been received since the server started, it shows `"Not yet received"`. When the device is offline, the sensor values show `—`.
 
-**Update frequency:** MB1 reads the DHT20 every 30 seconds and sends the result over UART → MQTT → server. The dashboard polls `/api/sensor` every 5 seconds, so the displayed value may be up to 5 seconds behind the server's most recent value, and up to 35 seconds behind the physical sensor.
+**Update frequency:** MB1 reads the DHT20 every **15 seconds** and sends the result over UART → MQTT → server. The dashboard polls `/api/sensor` every 5 seconds, so the displayed value may be up to 5 seconds behind the server's most recent value, and up to 20 seconds behind the physical sensor.
 
 ### Section: Upcoming Schedules
 
@@ -170,9 +170,9 @@ The dashboard uses a single `poll()` function that runs on page load and then ev
 
 | Endpoint | Returns | Used for |
 |---|---|---|
-| `GET /api/storage` | `{"a": 5, "b": 7, "updated": "01/04 14:32"}` | Storage cards, progress bars, last-updated label |
-| `GET /api/status` | `{"online": true, "ip": "192.168.1.42", "last_seen": "14:32:05"}` | Device status dot and IP |
-| `GET /api/sensor` | `{"temp": 28.3, "humidity": 62.5, "updated": "14:32:05"}` | Environment cards and timestamp |
+| `GET /api/storage` | `{"a": 5, "b": 7}` | Storage cards and progress bars (shown only when online) |
+| `GET /api/status` | `{"online": true, "ip": "192.168.1.42"}` | Device status dot, IP; gates whether storage/sensor values display |
+| `GET /api/sensor` | `{"temp": 28.3, "humidity": 62.5, "updated": "Apr 01, 2026 14:32"}` | Environment cards and timestamp (shown only when online) |
 | `GET /api/countdown` | `{"countdown": "1H 25M"}` or `{"countdown": null}` | Next-dose badge |
 
 If any of the three requests fails (network error or non-OK status), a failure counter increments. After **3 consecutive failures** the connection-lost modal is shown.

@@ -340,7 +340,7 @@ for _ in range(300):
 display.clear()
 clear_oled()
 read_sensors()
-sensor_timer = 30
+sensor_timer = 15
 
 while True:
     read_uart()
@@ -355,6 +355,6 @@ while True:
     sensor_timer -= 1
     if sensor_timer <= 0:
         read_sensors()
-        sensor_timer = 30
+        sensor_timer = 15
     update_oled()
     sleep(1000)

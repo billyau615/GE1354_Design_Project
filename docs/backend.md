@@ -74,15 +74,15 @@ Returns current storage counts and last update time: `{"a": 5, "b": 7, "updated"
 
 #### `GET /api/status`
 
-Returns device online status: `{"online": true, "ip": "192.168.1.42", "last_seen": "14:32:05"}`.
+Returns device online status: `{"online": true, "ip": "192.168.1.42"}`.
 
-`online` is `true` if a `dispenser/sensor` MQTT message was received within the last **90 seconds**. `ip` and `last_seen` are `null` until the first sensor message arrives. Polled every **5 seconds** by the dashboard.
+`online` is `true` if a `dispenser/ping` MQTT message was received within the last **15 seconds**. `ip` is `null` until the first sensor message arrives. Polled every **5 seconds** by the dashboard.
 
 #### `GET /api/sensor`
 
-Returns latest sensor data as JSON: `{"temp": 28.3, "humidity": 62.5, "updated": "14:32:05"}`.
+Returns latest sensor data as JSON: `{"temp": 28.3, "humidity": 62.5, "updated": "Apr 01, 2026 14:32"}`.
 
-The `updated` field is a server-side timestamp (HH:MM:SS) set at the moment the MQTT message was received, not the time the sensor was physically read. If no sensor data has been received since startup, all values are `null` and `updated` is `null`. Polled every **5 seconds** by the dashboard.
+The `updated` field is a server-side timestamp (`"Mmm DD, YYYY HH:MM"`) set at the moment the MQTT message was received. If no sensor data has been received since startup, all values are `null` and `updated` is `null`. Polled every **5 seconds** by the dashboard.
 
 #### `GET /api/countdown`
 
@@ -128,13 +128,14 @@ Runs as a **background daemon thread** using `paho-mqtt`'s `loop_forever()`. All
 ### Shared State
 
 ```python
-_sensor  = {"temp": None, "humidity": None, "updated": None, "updated_ts": 0, "ip": None}
-_storage = {"a": 7, "b": 7, "updated": None}
+_sensor  = {"temp": None, "humidity": None, "updated": None, "ip": None}
+_storage = {"a": 7, "b": 7}
+_ping_ts = 0.0
 ```
 
-- `_sensor["updated_ts"]` is a Unix timestamp (float) used to compute device online status
+- `_sensor["updated"]` is a `"Mmm DD, YYYY HH:MM"` string (e.g. `"Apr 01, 2026 14:32"`) set whenever a sensor MQTT message is received
 - `_sensor["ip"]` is populated from the `ip` field in the MQTT sensor payload
-- `_storage["updated"]` is a `DD/MM HH:MM` string set whenever storage changes
+- `_ping_ts` is a Unix timestamp updated on each `dispenser/ping` message; used to compute online status
 
 These are accessed by Flask routes via `get_sensor()`, `get_storage()`, and `get_status()`, which return shallow copies under the lock.
 
@@ -149,7 +150,8 @@ These are accessed by Flask routes via `get_sensor()`, `get_storage()`, and `get
 
 | Topic | Handler behaviour |
 |---|---|
-| `dispenser/sensor` | Updates `_sensor` with temp, humidity, IP address, HH:MM:SS timestamp, and Unix timestamp. Checks values against thresholds. Sends Telegram alert if threshold exceeded and cooldown has elapsed. |
+| `dispenser/ping` | Updates `_ping_ts` with `time.time()`. Used for online detection. No JSON parsing. |
+| `dispenser/sensor` | Updates `_sensor` with temp, humidity, IP address, and `"Mmm DD, YYYY HH:MM"` timestamp. Checks values against thresholds. Sends Telegram alert if threshold exceeded and cooldown has elapsed. |
 | `dispenser/storage` | Updates `_storage["a"]` and `_storage["b"]`. Writes to `state.json`. Sends Telegram alert if `empty_a` or `empty_b` flag is present. |
 | `dispenser/dispense_done` | Prints to console (no further action currently). |
 

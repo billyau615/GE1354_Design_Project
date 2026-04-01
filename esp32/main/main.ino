@@ -41,6 +41,7 @@ char     uart_buf[128];
 int      uart_pos = 0;
 
 int reconnect_fails = 0;
+unsigned long last_ping_ms = 0;
 
 // ── Forward declarations ──────────────────────────────────────────────────────
 void mqtt_callback(char* topic, byte* payload, unsigned int length);
@@ -94,6 +95,15 @@ void loop() {
         if (now - last_time_send >= 1000) {
             last_time_send = now;
             send_time_to_mb();
+        }
+    }
+
+    // Heartbeat ping every 5 seconds for server online detection
+    if (mqttClient.connected()) {
+        unsigned long now = millis();
+        if (now - last_ping_ms >= 5000) {
+            last_ping_ms = now;
+            mqttClient.publish("dispenser/ping", "1");
         }
     }
 
