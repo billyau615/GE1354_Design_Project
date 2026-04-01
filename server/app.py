@@ -76,15 +76,23 @@ def index():
 @app.route("/schedules", methods=["GET", "POST"])
 def schedules():
     current = load_schedules()
+    count_a = sum(1 for s in current if s["type"] in ("A", "AB"))
+    count_b = sum(1 for s in current if s["type"] in ("B", "AB"))
     if request.method == "POST":
         t = request.form.get("time", "").strip()
         med_type = request.form.get("type", "A").strip()
-        if t and len(current) < 6:
-            current.append({"time": t, "type": med_type})
-            current.sort(key=lambda x: x["time"])
-            save_schedules(current)
+        if t:
+            can_add = True
+            if med_type in ("A", "AB") and count_a >= 4:
+                can_add = False
+            if med_type in ("B", "AB") and count_b >= 4:
+                can_add = False
+            if can_add:
+                current.append({"time": t, "type": med_type})
+                current.sort(key=lambda x: x["time"])
+                save_schedules(current)
         return redirect(url_for("schedules"))
-    return render_template("schedules.html", schedules=current)
+    return render_template("schedules.html", schedules=current, count_a=count_a, count_b=count_b)
 
 
 @app.route("/schedules/delete/<int:idx>", methods=["POST"])

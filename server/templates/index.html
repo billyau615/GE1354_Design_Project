@@ -37,19 +37,19 @@
   <div class="col-6 col-md-3">
     <div class="card p-3">
       <div class="storage-label mb-1">{{ label }}</div>
-      <div class="storage-count" id="storage-count-{{ key }}">{{ storage[key] }} / 7</div>
+      <div class="storage-count" id="storage-count-{{ key }}">{{ storage[key] }} / 4</div>
       <div class="pill-bar">
         <div class="pill-bar-fill" id="storage-bar-{{ key }}"
-             style="width:{{ (storage[key] / 7 * 100)|int }}%;
-                    background-color:{% if storage[key] == 0 %}#dc3545{% elif storage[key] <= 2 %}#ffc107{% else %}#198754{% endif %}">
+             style="width:{{ (storage[key] / 4 * 100)|int }}%;
+                    background-color:{% if storage[key] == 0 %}#dc3545{% elif storage[key] <= 1 %}#ffc107{% else %}#198754{% endif %}">
         </div>
       </div>
       <small id="storage-warn-{{ key }}" class="mt-1
         {% if storage[key] == 0 %}text-danger
-        {% elif storage[key] <= 2 %}text-warning
+        {% elif storage[key] <= 1 %}text-warning
         {% else %}invisible{% endif %}">
         {% if storage[key] == 0 %}Empty — please refill
-        {% elif storage[key] <= 2 %}Low — refill soon
+        {% elif storage[key] <= 1 %}Low — refill soon
         {% else %}&nbsp;{% endif %}
       </small>
     </div>
@@ -140,12 +140,12 @@ let failCount = 0;
 const MAX_FAILS = 3;
 
 function setStorage(key, count) {
-  const pct = Math.round(count / 7 * 100);
-  const color = count === 0 ? '#dc3545' : count <= 2 ? '#ffc107' : '#198754';
-  const textClass = count === 0 ? 'text-danger' : count <= 2 ? 'text-warning' : 'invisible';
-  const warnText = count === 0 ? 'Empty — please refill' : count <= 2 ? 'Low — refill soon' : '\u00a0';
+  const pct = Math.round(count / 4 * 100);
+  const color = count === 0 ? '#dc3545' : count <= 1 ? '#ffc107' : '#198754';
+  const textClass = count === 0 ? 'text-danger' : count <= 1 ? 'text-warning' : 'invisible';
+  const warnText = count === 0 ? 'Empty — please refill' : count <= 1 ? 'Low — refill soon' : '\u00a0';
 
-  document.getElementById('storage-count-' + key).textContent = count + ' / 7';
+  document.getElementById('storage-count-' + key).textContent = count + ' / 4';
   const bar = document.getElementById('storage-bar-' + key);
   bar.style.width = pct + '%';
   bar.style.backgroundColor = color;
@@ -156,7 +156,7 @@ function setStorage(key, count) {
 
 function setOffline() {
   ['a', 'b'].forEach(key => {
-    document.getElementById('storage-count-' + key).textContent = '- / 7';
+    document.getElementById('storage-count-' + key).textContent = '- / 4';
     const bar = document.getElementById('storage-bar-' + key);
     bar.style.width = '0%';
     bar.style.backgroundColor = '#6c757d';

@@ -22,8 +22,8 @@ RICKROLL = [
 
 h = 0; m = 0; s = 0
 schedules = []
-storage_a = 7
-storage_b = 7
+storage_a = 4
+storage_b = 4
 dispensed_this_minute = False
 sensor_timer = 0
 last_humi = None
@@ -228,11 +228,12 @@ def enter_refill_mode(type_str):
             if button_b.was_pressed():
                 return
             sleep(50)
+    radio.send("REFILL:" + type_str)
     slot_count = 0
     clear_oled()
     write_oled("Refill " + type_str, 0)
     display.show(str(slot_count))
-    while slot_count < 7:
+    while slot_count < 4:
         if type_str == "A":
             pressed = button_a.was_pressed()
             exit_pressed = button_b.was_pressed()
@@ -242,6 +243,7 @@ def enter_refill_mode(type_str):
         if pressed:
             slot_count += 1
             display.show(str(slot_count))
+            radio.send("SERVO_STEP:" + type_str)
         if exit_pressed:
             break
         sleep(50)
@@ -337,6 +339,7 @@ for _ in range(300):
                     break
     sleep(10)
 
+radio.send("INIT:{},{}".format(storage_a, storage_b))
 display.clear()
 clear_oled()
 read_sensors()

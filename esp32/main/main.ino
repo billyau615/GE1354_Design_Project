@@ -220,8 +220,8 @@ void push_init_to_mb() {
     // Push stored storage counts to MB1 on (re)connect via UART only.
     // Do NOT publish to MQTT here — the server's state.json is the source
     // of truth and must not be overwritten by ESP32 NVS defaults.
-    int a = prefs.getInt("storage_a", 7);
-    int b = prefs.getInt("storage_b", 7);
+    int a = prefs.getInt("storage_a", 4);
+    int b = prefs.getInt("storage_b", 4);
     char line[32];
     snprintf(line, sizeof(line), "STORAGE_SET:%d,%d", a, b);
     Serial1.println(line);

@@ -49,17 +49,17 @@ The device is considered **online** if a `dispenser/ping` MQTT heartbeat was rec
 Two cards (one per medication type) showing:
 
 - **Type label** (Type A / Type B) — small uppercase label
-- **Count** — large number in `X / 7` format (e.g. `5 / 7`)
+- **Count** — large number in `X / 4` format (e.g. `3 / 4`)
 - **Progress bar** — colour-coded pill bar:
-  - Green (`#198754`) — 3 or more remaining
-  - Amber (`#ffc107`) — 1 or 2 remaining
+  - Green (`#198754`) — 2 or more remaining
+  - Amber (`#ffc107`) — 1 remaining
   - Red (`#dc3545`) — 0 remaining (empty)
 - **Warning text** — shown when low or empty:
-  - `"Low — refill soon"` (≤ 2 pills, amber)
+  - `"Low — refill soon"` (1 pill, amber)
   - `"Empty — please refill"` (0 pills, red)
   - Hidden when stock is sufficient
 
-Both cards and their progress bars update every 5 seconds by polling `/api/storage`. When the device is offline, both counts display as `- / 7` with a grey bar.
+Both cards and their progress bars update every 5 seconds by polling `/api/storage`. When the device is offline, both counts display as `- / 4` with a grey bar.
 
 ### Section: Dispense
 
@@ -111,7 +111,7 @@ If 3 or more consecutive API poll failures occur (network error or non-2xx respo
 
 ## Page: Schedules (`/schedules`)
 
-Displays and manages medication schedules. Up to **6 schedules** can be configured.
+Displays and manages medication schedules. Each type (A and B) supports up to **4 schedules per day**, matching the 4-pill capacity of each dispenser wheel.
 
 ### Schedule list
 
@@ -119,16 +119,16 @@ A table with columns: index, time (24h), type, and a Delete button. Clicking Del
 
 ### Add Schedule form
 
-Shown only when fewer than 6 schedules exist. Two fields:
+Shown only when at least one type has not yet reached its limit of 4. Above the form, the current usage is shown as `Type A: X/4 | Type B: X/4`. The type selector only shows types that are still under the limit — once a type hits 4, it is removed from the dropdown. When both types are at the limit, the form is replaced with a warning message.
 
 | Field | Type | Values |
 |---|---|---|
 | Time | `<input type="time">` | Any 24-hour time (HH:MM) |
-| Type | `<select>` | Type A, Type B, Both (A + B) |
+| Type | `<select>` | Types not yet at their limit |
 
 On submit, the new schedule is appended, the list is sorted by time, and the updated list is immediately published to the MQTT broker (retained). MB1 receives the updated schedule on its next UART read.
 
-When 6 schedules are already configured, the form is hidden and replaced with a warning message.
+When both types are at their maximum (4/4), the form is hidden and replaced with a warning message.
 
 ---
 

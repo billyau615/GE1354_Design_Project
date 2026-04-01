@@ -117,12 +117,12 @@ Full integrated system built across all components:
 - Sensor read interval reduced from 30s to 15s
 - Sensor last-updated timestamp format changed to `"Apr 01, 2026 14:32:05"` with seconds; font matched to section title
 - IP address hidden when device is offline
-- When offline: storage counts show `- / 7` (grey bar), sensor values show `—`
+- When offline: storage counts show `- / 4` (grey bar), sensor values show `—`
 - Storage last-updated timestamp removed from dashboard
 
 ### Bug fixes
 
-- **Storage resets to 7/7 on device reboot**: root cause was `push_init_to_mb()` publishing `dispenser/storage` from ESP32 NVS defaults (7/7) on every reconnect, overwriting the server's `state.json`. Fixed by removing the MQTT publish from `push_init_to_mb()` — server `state.json` is now the sole source of truth
+- **Storage resets to 4/4 on device reboot**: root cause was `push_init_to_mb()` publishing `dispenser/storage` from ESP32 NVS defaults on every reconnect, overwriting the server's `state.json`. Fixed by removing the MQTT publish from `push_init_to_mb()` — server `state.json` is now the sole source of truth
 
 ### Servo calibration — MB2
 
@@ -132,6 +132,32 @@ Full integrated system built across all components:
 - `HOME_US = 500`, `MAX_US = 2500`, `STEP_US = 500`, 4 steps (slots 0–4)
 - Calibration documented in `experiments/servo-test/README.md` and `docs/hardware.md`
 
+---
+
+## 2 April 2026
+
+### MB2 — Servo integration (full rewrite)
+
+- Rewrote `microbit/main/mb2/main.py` with calibrated values: `HOME_US=500`, `STEP_US=500`, `MAX_SLOTS=4`, `PERIOD_US=20000`; Servo A on P0, Servo B on P1
+- Servo does **not** home on startup — waits for `INIT:a,b` from MB1 to restore position from storage counts (`slot = 4 - remaining`)
+- Radio commands handled: `INIT:a,b`, `DISPENSE:A/B/AB`, `REFILL:A/B`, `SERVO_STEP:A/B`
+- Button A/B kept for manual slot advance during testing
+
+### MB1 — Storage cap + refill improvements
+
+- Storage defaults changed: `storage_a = 7` → `4`, `storage_b = 7` → `4`
+- Refill loop cap: `while slot_count < 7` → `< 4`
+- After STORAGE_SET received at boot, MB1 now sends `INIT:a,b` radio to MB2
+- Refill mode now sends `REFILL:X` before the count loop (resets servo to HOME) and `SERVO_STEP:X` on each button press (advances servo one slot per pill loaded through dispense hole)
+
+### System — 4-pill capacity throughout
+
+- Dashboard storage: `/7` → `/4`; low warning threshold: `≤ 2` → `≤ 1`
+- Schedule page: per-type limit of 4 (A and B independently); shows `Type A: X/4 | Type B: X/4`; type selector hides types at max
+- ESP32 NVS defaults: `storage_a/b` → 4
+- `mqtt_bridge.py` in-memory default: `{"a": 4, "b": 4}`
+- All docs updated: `mb1.md`, `web-ui.md`, `main-project.md`, `hardware.md`
+
 ## Up Next
-- MB2 main project: integrate servo control using calibrated values, respond to radio commands from MB1
-- Integration testing: boot sequence, schedule trigger, refill flow
+- Integration testing: boot sequence, INIT restore, schedule trigger, refill flow
+- MB2 physical wiring: P0 → Servo A, P1 → Servo B, 6–8.4V external supply, common GND

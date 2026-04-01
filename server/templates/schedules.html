@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <h2 class="mt-4">Schedules</h2>
-<p class="text-muted">Up to 6 medication times. On each schedule, the selected type(s) will be dispensed and the alarm will sound.</p>
+<p class="text-muted">Each type (A and B) can be scheduled up to 4 times per day, matching the 4-pill capacity of each dispenser wheel. On each schedule, the selected type(s) will be dispensed and the alarm will sound.</p>
 
 {% if schedules %}
 <div class="table-responsive">
@@ -33,8 +33,11 @@
 <p class="text-muted">No schedules yet.</p>
 {% endif %}
 
-{% if schedules|length < 6 %}
+{% if count_a < 4 or count_b < 4 %}
 <h5 class="mt-4">Add Schedule</h5>
+<p class="text-muted mb-2" style="font-size:.9rem">
+  Type A: {{ count_a }}/4 &nbsp;|&nbsp; Type B: {{ count_b }}/4
+</p>
 <form method="post">
   <div class="row g-2">
     <div class="col-12 col-sm-auto">
@@ -44,9 +47,9 @@
     <div class="col-12 col-sm-auto">
       <label class="form-label">Type</label>
       <select name="type" class="form-select">
-        <option value="A">Type A</option>
-        <option value="B">Type B</option>
-        <option value="AB">Both (A + B)</option>
+        {% if count_a < 4 %}<option value="A">Type A</option>{% endif %}
+        {% if count_b < 4 %}<option value="B">Type B</option>{% endif %}
+        {% if count_a < 4 and count_b < 4 %}<option value="AB">Both (A + B)</option>{% endif %}
       </select>
     </div>
     <div class="col-12 col-sm-auto d-flex align-items-end">
@@ -55,6 +58,13 @@
   </div>
 </form>
 {% else %}
-<p class="text-warning mt-3">Maximum 6 schedules reached. Delete one to add another.</p>
+<p class="text-warning mt-3">Both types at maximum (4/day). Delete a schedule to add another.</p>
+{% endif %}
+
+{% if count_a >= 4 %}
+<p class="text-warning mt-2 mb-0" style="font-size:.9rem">Type A is at the daily limit (4/4).</p>
+{% endif %}
+{% if count_b >= 4 %}
+<p class="text-warning mt-2 mb-0" style="font-size:.9rem">Type B is at the daily limit (4/4).</p>
 {% endif %}
 {% endblock %}

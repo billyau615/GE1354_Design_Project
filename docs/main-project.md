@@ -94,24 +94,25 @@ All messages are newline-terminated ASCII.
 | Direction | Message |
 |---|---|
 | MB1→MB2 | `DISPENSE:A`, `DISPENSE:B`, `DISPENSE:AB` |
-| MB1→MB2 | `SERVO_STEP` (refill mode, advance one slot) |
-| MB2→MB1 | `DONE:A`, `DONE:B`, `DONE:AB` |
+| MB1→MB2 | `INIT:a,b` (boot — restore servo positions from storage counts) |
+| MB1→MB2 | `REFILL:A`, `REFILL:B` (reset servo to HOME before refill loop) |
+| MB1→MB2 | `SERVO_STEP:A`, `SERVO_STEP:B` (advance servo one slot per button press during refill) |
 
 ---
 
 ## Key Features
 
 ### Drug storage
-- 2 types (A and B), 8 slots each, 1 always left empty = **7 pills max per type**
-- Wheel mechanic: each dispense command turns the servo one slot (MB2, currently stubbed)
+- 2 types (A and B), 8-spoke wheel, 4 slots used = **4 pills max per type**
+- Wheel mechanic: each dispense command turns the servo one slot (500µs step, HOME=500µs, MAX=2500µs)
 
 ### Dispense modes
 - **Normal dispense** (A, B, or A+B): plays Never Gonna Give You Up on buzzer, OLED shows "Take meds / type / current time". Waits for FC-51 IR sensor (P1) to detect hand before stopping buzzer and returning to normal display.
 - **Manual dispense** (A or B only): silently sends radio command to MB2 and decrements storage — no buzzer, no OLED change, no IR wait.
 
 ### Schedules
-- Up to **6 medication times** configured via web UI
-- Each schedule: time (HH:MM) + type (A, B, or AB)
+- Up to **4 medication times per type** configured via web UI (matches 4-pill wheel capacity)
+- Each schedule: time (HH:MM) + type (A, B, or AB). AB counts toward both A and B limits.
 - MB1 calls `check_schedules()` every second (guarded by `dispensed_this_minute` flag); resets flag on minute change. This ensures a skipped DS3231 read at the start of a minute cannot cause a missed dose.
 - Schedules persisted in `server/data/schedules.json`; pushed to MB1 via retained MQTT on every boot
 
@@ -122,10 +123,11 @@ All messages are newline-terminated ASCII.
 
 ### Refill mode
 - **Long-press A** (≥1s) → refill Type A; **long-press B** → refill Type B
-- LED matrix shows current slot count (0–7)
-- Press same button to advance one slot (servo step — stubbed)
-- Press other button to exit; count is saved and synced via UART
 - If pills remain when entering: OLED warning — A=reset to 0, B=cancel
+- MB1 sends `REFILL:X` → MB2 resets servo to HOME (slot 0, 500µs) — dispense hole now at first empty slot
+- LED matrix shows current slot count (0–4)
+- Press same button once per pill: MB1 increments count and sends `SERVO_STEP:X` → MB2 advances servo one slot, bringing the next empty slot to the dispense hole
+- Press other button to exit; count is saved and synced via UART (`STORAGE:a,b`)
 
 ### Alerts (Telegram)
 - **Storage empty**: sent immediately when the last pill is dispensed (storage → 0)

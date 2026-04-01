@@ -143,8 +143,9 @@ Entered by holding button A (Type A) or button B (Type B) for approximately 1 se
 - Button A confirms zero-reset; Button B cancels without changes
 
 **Refill counting loop:**
-- OLED shows `"Refill X"` (small text); LED matrix shows current slot count (0–7)
-- Press the same button (A for Type A, B for Type B) to count one slot (and send `SERVO_STEP` to MB2 when hardware is ready)
+- Before the loop starts, MB1 sends `REFILL:X` to MB2, which resets that servo to HOME (slot 0, 500µs) — dispense hole is now at the first empty slot
+- OLED shows `"Refill X"` (small text); LED matrix shows current slot count (0–4)
+- Press the same button (A for Type A, B for Type B) once per pill: MB1 increments the count and sends `SERVO_STEP:X` to MB2, advancing the servo one slot so the next empty slot is at the dispense hole
 - Press the other button to exit
 
 On exit, the new count is saved to `storage_a`/`storage_b` and reported via UART (`STORAGE:a,b`).
@@ -207,12 +208,12 @@ Shown from the moment a normal dispense starts until the IR sensor is triggered:
 | MB→ESP | `TIME_REQ` | Request current NTP time |
 | MB→ESP | `TIME_ACK` | Time received and written to DS3231 |
 | MB→ESP | `SENSOR:25.1,60.5` | Temperature (°C), humidity (%) |
-| MB→ESP | `STORAGE:7,5` | Current storage counts after dispense or refill |
-| MB→ESP | `STORAGE:0,5:EMPTY_A` | Storage update with empty flag (triggers Telegram) |
+| MB→ESP | `STORAGE:4,3` | Current storage counts after dispense or refill |
+| MB→ESP | `STORAGE:0,3:EMPTY_A` | Storage update with empty flag (triggers Telegram) |
 | MB→ESP | `DISPENSE_DONE:A` | Confirmed dispense complete |
 | ESP→MB | `TIME:14:30:22` | NTP time (sent every 1s after TIME_REQ until ACK) |
 | ESP→MB | `SCHED:14:30:A,15:00:B` | Full schedule list (comma-separated) |
-| ESP→MB | `STORAGE_SET:7,5` | Initial storage counts from NVS on boot |
+| ESP→MB | `STORAGE_SET:4,3` | Initial storage counts from NVS on boot |
 | ESP→MB | `DISPENSE:A/B/AB` | Normal dispense command from web UI |
 | ESP→MB | `MANUAL:A/B` | Silent dispense command from web UI |
 
@@ -225,5 +226,6 @@ Shown from the moment a normal dispense starts until the IR sensor is triggered:
 | Direction | Message | Meaning |
 |---|---|---|
 | MB1→MB2 | `DISPENSE:A/B/AB` | Activate servo for dispensing |
-| MB1→MB2 | `SERVO_STEP` | Advance one slot during refill (stubbed) |
-| MB2→MB1 | `DONE:A/B/AB` | Servo finished (currently displayed on MB2 LED matrix) |
+| MB1→MB2 | `INIT:a,b` | On boot — restore servo positions from storage counts |
+| MB1→MB2 | `REFILL:A/B` | Reset servo to HOME before refill counting loop |
+| MB1→MB2 | `SERVO_STEP:A/B` | Advance servo one slot per button press during refill |

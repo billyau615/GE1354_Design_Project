@@ -9,7 +9,7 @@ from telegram import send_alert
 # ── Shared state ──────────────────────────────────────────────────────────────
 _lock = threading.Lock()
 _sensor = {"temp": None, "humidity": None, "updated": None, "ip": None}
-_storage = {"a": 7, "b": 7}
+_storage = {"a": 4, "b": 4}
 _ping_ts = 0.0
 
 # Rate-limit timestamps for threshold alerts (per category)
