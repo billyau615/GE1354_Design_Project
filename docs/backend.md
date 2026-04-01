@@ -1,6 +1,6 @@
 # Python Backend — Component Documentation
 
-> Last updated: 31 March 2026
+> Last updated: 2 April 2026
 
 The backend is a Python application running on the server. It consists of three modules:
 
