@@ -1,6 +1,6 @@
 # Micro:bit #1 — Component Documentation
 
-> Last updated: 31 March 2026
+> Last updated: 2 April 2026
 
 Micro:bit #1 is the central logic node of the drug dispenser. It manages the real-time clock, sensor readings, medication schedules, dispensing logic, and the OLED display. It communicates with the ESP32 over UART and with Micro:bit #2 over the built-in 2.4 GHz radio.
 
@@ -32,8 +32,6 @@ All files are located in `microbit/main/mb1/`.
 | `oled.py` | SSD1306 OLED driver: init, clear, 1× and 2× text rendering |
 | `dht20.py` | DHT20 sensor driver: single-shot measurement |
 | `ds3231.py` | DS3231 RTC driver: read/write time, BCD encode/decode |
-
-> **Flashing:** Files must be transferred individually using **Thonny** (View → Files → right-click each `.py` → Upload to /). The Micro:bit web editor has a size limit (~8 KB) that these files exceed when combined.
 
 ---
 
