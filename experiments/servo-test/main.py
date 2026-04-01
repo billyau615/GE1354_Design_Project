@@ -1,23 +1,24 @@
 from microbit import pin0, button_a, button_b, display, sleep
 
-# ── Servo calibration experiment ───────────────────────────────────────────────
-# 8-slot rotary dispenser: each pill = 45 degrees of rotation
+# ── Servo calibration — ratchet style ─────────────────────────────────────────
+# Each dispense: servo pushes wheel one slot forward then returns home.
+# The wheel must hold position on its own (friction/gravity) when servo returns.
+#
+# Tune:
+#   HOME_US  — resting position. Adjust until wheel sits correctly between slots.
+#   STEP_US  — how far to push. Increase until exactly one slot advances per press.
 #
 # Controls:
-#   Button A            → step forward one slot
-#   Button B            → step backward one slot
-#   A + B (hold 1s)     → reset to slot 0 (home)
-#
-# HOME_US is set to 1500 (servo midpoint) to avoid the non-linear zone
-# near the 1000 µs extreme where the same µs = more physical degrees.
-# Adjust STEP_US if one step doesn't equal exactly one slot.
+#   Button A            → one dispense cycle (home → push → home)
+#   Button B (short)    → nudge HOME_US by +10 µs (shift resting position)
+#   Button B (hold 1s)  → nudge HOME_US by -10 µs
+#   A + B (hold 1s)     → print current HOME_US and STEP_US to display
 
-HOME_US   = 1500    # midpoint of servo range — adjust to align slot 0
-STEP_US   = 250     # µs per slot (45 deg). increase = bigger step
+HOME_US   = 1500    # resting pulse width (µs) — tune this
+STEP_US   = 250     # push distance (µs) for 45 deg — tune this
+HOLD_MS   = 400     # ms to hold at pushed position before returning
+SETTLE_MS = 400     # ms to wait after each servo move
 PERIOD_US = 20000   # 50 Hz — do not change
-SETTLE_MS = 500     # ms to wait for servo to reach position
-
-slot = 0
 
 
 def set_servo(us):
@@ -26,43 +27,50 @@ def set_servo(us):
     pin0.write_analog(duty)
 
 
-def release():
-    pin0.write_digital(0)
-
-
-def go_to_slot(n):
-    us = HOME_US + n * STEP_US
-    set_servo(us)
+def dispense():
+    set_servo(HOME_US + STEP_US)
+    sleep(HOLD_MS)
+    set_servo(HOME_US)
     sleep(SETTLE_MS)
 
 
-go_to_slot(0)
-display.show("0")
+# Go to home on startup
+set_servo(HOME_US)
+sleep(SETTLE_MS)
+display.show("H")
 
-ab_timer = 0
+b_hold = 0
 
 while True:
     a = button_a.is_pressed()
     b = button_b.is_pressed()
 
     if a and b:
-        ab_timer += 1
-        if ab_timer >= 20:  # held for ~1 second
-            slot = 0
-            go_to_slot(slot)
-            display.show("0")
-            ab_timer = 0
-            sleep(600)
+        b_hold += 1
+        if b_hold >= 20:
+            # Show STEP_US on display
+            display.scroll(str(STEP_US), delay=80)
+            display.show("H")
+            b_hold = 0
+            sleep(400)
     else:
-        ab_timer = 0
+        b_hold = 0
+
         if button_a.was_pressed():
-            slot += 1
-            go_to_slot(slot)
-            display.show(str(slot) if slot < 10 else "+")
-        elif button_b.was_pressed():
-            if slot > 0:
-                slot -= 1
-            go_to_slot(slot)
-            display.show(str(slot) if slot < 10 else "+")
+            display.show(">")
+            dispense()
+            display.show("H")
+
+        if button_b.was_pressed():
+            # Check if B is still held after was_pressed for direction
+            sleep(300)
+            if button_b.is_pressed():
+                HOME_US -= 10
+            else:
+                HOME_US += 10
+            set_servo(HOME_US)
+            sleep(SETTLE_MS)
+            display.scroll(str(HOME_US), delay=80)
+            display.show("H")
 
     sleep(50)
