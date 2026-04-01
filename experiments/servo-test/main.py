@@ -34,7 +34,6 @@ def go_to_slot(n):
     us = HOME_US + n * STEP_US
     set_servo(us)
     sleep(SETTLE_MS)
-    release()
 
 
 go_to_slot(0)
