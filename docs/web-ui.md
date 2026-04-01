@@ -1,6 +1,6 @@
 # Web UI — Component Documentation
 
-> Last updated: 31 March 2026
+> Last updated: 2 April 2026
 
 The web UI is a multi-page Bootstrap 5 application served by the Flask backend. It provides real-time monitoring of the dispenser state, manual dispense controls, schedule management, and system settings. All pages are mobile-responsive and use a dark fixed-top navbar for navigation.
 
