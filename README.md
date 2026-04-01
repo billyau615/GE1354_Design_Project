@@ -69,6 +69,7 @@ Small test projects to validate individual components before integration:
 | [ntp-clock](experiments/ntp-clock/) | Sync time from ESP32 NTP and display datetime on OLED, beep every minute |
 | [ir-sensor](experiments/ir-sensor/) | FC-51 IR obstacle sensor on P1 triggers buzzer on P0 |
 | [ds3231](experiments/ds3231/) | Fetch NTP time from ESP32 via UART, write to DS3231 RTC, display time from RTC on OLED |
+| [servo-test](experiments/servo-test/) | Calibrate JX BLS-HV7146MG servo for 4-slot rotary pill dispenser (MB2) |
 
 ## Web UI Preview
 
