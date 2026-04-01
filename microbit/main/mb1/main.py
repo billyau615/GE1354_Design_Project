@@ -186,7 +186,7 @@ def fmt_12h():
     if hh == 0:
         hh = 12
     suffix = "PM" if h >= 12 else "AM"
-    return "{:02d}:{:02d} {}".format(hh, m, suffix)
+    return "{}:{:02d} {}".format(hh, m, suffix)
 
 def read_sensors():
     global last_humi, last_temp

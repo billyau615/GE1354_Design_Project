@@ -255,10 +255,11 @@ void handle_mb_line(const char* line) {
         // SENSOR:temp,humi
         float temp = 0, humi = 0;
         sscanf(line + 7, "%f,%f", &temp, &humi);
-        StaticJsonDocument<64> doc;
+        StaticJsonDocument<128> doc;
         doc["temp"] = temp;
         doc["humidity"] = humi;
-        char buf[64];
+        doc["ip"] = WiFi.localIP().toString();
+        char buf[128];
         serializeJson(doc, buf);
         mqttClient.publish("dispenser/sensor", buf);
 

@@ -8,8 +8,8 @@ from telegram import send_alert
 
 # ── Shared state ──────────────────────────────────────────────────────────────
 _lock = threading.Lock()
-_sensor = {"temp": None, "humidity": None, "updated": None}
-_storage = {"a": 7, "b": 7}
+_sensor = {"temp": None, "humidity": None, "updated": None, "updated_ts": 0, "ip": None}
+_storage = {"a": 7, "b": 7, "updated": None}
 
 # Rate-limit timestamps for threshold alerts (per category)
 _last_temp_alert = 0
@@ -31,6 +31,13 @@ def get_sensor():
 def get_storage():
     with _lock:
         return dict(_storage)
+
+
+def get_status():
+    with _lock:
+        ts = _sensor["updated_ts"]
+        online = (time.time() - ts) < 90 if ts else False
+        return {"online": online, "ip": _sensor["ip"], "last_seen": _sensor["updated"]}
 
 
 def publish_command(payload: dict):
@@ -88,6 +95,9 @@ def _on_message(client, userdata, msg):
             _sensor["temp"] = payload.get("temp")
             _sensor["humidity"] = payload.get("humidity")
             _sensor["updated"] = now
+            _sensor["updated_ts"] = time.time()
+            if payload.get("ip"):
+                _sensor["ip"] = payload.get("ip")
 
         settings = _load_settings()
         if settings.get("notify_env", True):
@@ -111,6 +121,7 @@ def _on_message(client, userdata, msg):
                 _storage["a"] = payload["a"]
             if "b" in payload:
                 _storage["b"] = payload["b"]
+            _storage["updated"] = time.strftime("%d/%m %H:%M")
             _save_state()
 
         settings = _load_settings()
@@ -135,8 +146,8 @@ def start(broker_host: str, broker_port: int = 1883,
         with open(STATE_FILE) as f:
             saved = json.load(f)
             with _lock:
-                _storage["a"] = saved.get("storage_a", 7)
-                _storage["b"] = saved.get("storage_b", 7)
+                _storage["a"] = saved.get("a", 7)
+                _storage["b"] = saved.get("b", 7)
     except Exception:
         pass
 
