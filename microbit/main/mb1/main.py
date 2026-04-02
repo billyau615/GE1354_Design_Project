@@ -253,6 +253,7 @@ def enter_refill_mode(type_str):
     else:
         storage_b = slot_count
     send_uart("STORAGE:{},{}".format(storage_a, storage_b))
+    radio.send("INIT:{},{}".format(storage_a, storage_b))
     display.clear()
     clear_oled()
 
