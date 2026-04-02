@@ -42,24 +42,31 @@ while True:
             if slot_a < MAX_SLOTS:
                 slot_a += 1
                 set_servo(SERVO_A, HOME_US + slot_a * STEP_US)
-            display.show(Image.ARROW_E)
+                display.show(Image.ARROW_E)
+            else:
+                display.show(Image.NO)
             sleep(500)
             display.show("2")
         elif msg == "DISPENSE:B":
             if slot_b < MAX_SLOTS:
                 slot_b += 1
                 set_servo(SERVO_B, HOME_US + slot_b * STEP_US)
-            display.show(Image.ARROW_W)
+                display.show(Image.ARROW_W)
+            else:
+                display.show(Image.NO)
             sleep(500)
             display.show("2")
         elif msg == "DISPENSE:AB":
+            moved = False
             if slot_a < MAX_SLOTS:
                 slot_a += 1
                 set_servo(SERVO_A, HOME_US + slot_a * STEP_US)
+                moved = True
             if slot_b < MAX_SLOTS:
                 slot_b += 1
                 set_servo(SERVO_B, HOME_US + slot_b * STEP_US)
-            display.show(Image.ARROW_E)
+                moved = True
+            display.show(Image.ARROW_E if moved else Image.NO)
             sleep(500)
             display.show("2")
         elif msg == "REFILL:A":

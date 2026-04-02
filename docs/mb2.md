@@ -114,8 +114,9 @@ The lid is fixed in place. Pills are loaded through the dispense hole one at a t
 | State | Display |
 |---|---|
 | Idle / waiting | `"2"` |
-| DISPENSE:A or DISPENSE:AB | Arrow right (→), 500ms |
-| DISPENSE:B | Arrow left (←), 500ms |
+| DISPENSE:A or DISPENSE:AB — servo moved | Arrow right (→), 500ms |
+| DISPENSE:B — servo moved | Arrow left (←), 500ms |
+| DISPENSE received but slot already at MAX (empty) | ✗ (NO image), 500ms |
 
 
 These allow slot-by-slot testing without MB1 or radio commands.
