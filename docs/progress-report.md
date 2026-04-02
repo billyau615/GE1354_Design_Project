@@ -196,3 +196,7 @@ Based on the 180° servo limitation discovered during calibration, the storage c
 - MB1 bridges UART → radio (group 43); MB2 receives `CAL:A,us` and sets servo PWM directly
 - ESP32 subscribes to `dispenser/cal`, validates JSON `{wheel, us}`, forwards to MB1
 - Calibration table documented in `experiments/servo-cal/README.md`; values applied to main project after calibration
+
+### Dashboard — humidity display fix
+
+- Humidity card showed `100.0%` at max saturation, making the card visually wider/misaligned next to the temperature card; changed to display `100%` (no decimal) when humidity ≥ 100
