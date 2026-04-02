@@ -93,7 +93,7 @@
     <div class="card p-3 text-center">
       <div class="text-muted small">Humidity</div>
       <div class="sensor-val text-info" id="sensor-humi">
-        {% if sensor.humidity is not none %}{{ sensor.humidity }}%{% else %}—{% endif %}
+        {% if sensor.humidity is not none %}{% if sensor.humidity >= 100 %}100%{% else %}{{ sensor.humidity }}%{% endif %}{% else %}—{% endif %}
       </div>
     </div>
   </div>
@@ -171,7 +171,7 @@ function setStatus(data) {
 
 function setSensor(data) {
   document.getElementById('sensor-temp').textContent = data.temp !== null ? data.temp.toFixed(1) + '°C' : '—';
-  document.getElementById('sensor-humi').textContent = data.humidity !== null ? data.humidity.toFixed(1) + '%' : '—';
+  document.getElementById('sensor-humi').textContent = data.humidity !== null ? (data.humidity >= 100 ? '100%' : data.humidity.toFixed(1) + '%') : '—';
   document.getElementById('sensor-updated').textContent = data.updated ? 'Last updated: ' + data.updated : 'Not yet received';
 }
 
