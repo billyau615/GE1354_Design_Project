@@ -141,25 +141,58 @@ Based on the 180° servo limitation discovered during calibration, the storage c
 
 ### MB2 — Servo integration (full rewrite)
 
-- Rewrote `microbit/main/mb2/main.py` using calibrated values: `HOME_US=500`, `STEP_US=500`, `MAX_SLOTS=4`, `PERIOD_US=20000`; Servo A on P0, Servo B on P1
-- Servo does **not** home on startup — waits for `INIT:a,b` from MB1 to restore position from storage counts (`slot = 4 - remaining`), so remaining pills are not disrupted on reboot
+- Rewrote `microbit/main/mb2/main.py` with `MAX_SLOTS=4`, `PERIOD_US=20000`; Servo A on P0, Servo B on P1
+- Servo does **not** home on startup — waits for `INIT:a,b` from MB1 to restore position from storage counts (`slot_a = a` directly), so remaining pills are not disrupted on reboot
+- **Slot direction clarified**: full (4 pills) = slot 4 at dispense hole; dispensing decrements 4 → 3 → 2 → 1 → 0 (slot 0 = empty, hole at lowest position)
 - Radio commands handled: `INIT:a,b`, `DISPENSE:A/B/AB`, `REFILL:A/B`, `SERVO_STEP:A/B`
-- Refill loads pills through the fixed dispense hole: `REFILL` resets servo to HOME, then `SERVO_STEP` advances one slot per button press as the user drops each pill
-- Button A/B kept for manual slot advance during testing
+- Refill loads pills through the fixed dispense hole: `REFILL` resets servo to slot 0 (500µs), then `SERVO_STEP` advances one slot per button press as the user drops each pill
+- Manual A/B button testing removed (calibration complete; buttons no longer needed)
+
+### MB2 — Per-slot lookup tables (non-uniform spacing)
+
+- Servo-cal experiment (`experiments/servo-cal/`) run to find exact pulse widths per slot: MQTT-driven, radio group 43, no reflashing required
+- Calibration revealed non-uniform slot spacing; replaced `HOME_US + slot × STEP_US` formula with per-wheel lookup arrays:
+  - `SLOTS_A = [500, 900, 1400, 1900, 2400]`
+  - `SLOTS_B = [500, 970, 1450, 1970, 2450]`
+- All `set_servo()` calls now index `SLOTS_A[slot_a]` / `SLOTS_B[slot_b]`
 
 ### MB1 — Storage cap + refill improvements
 
-- Storage defaults changed: `storage_a/b = 7` → `4`
-- Refill loop cap: `while slot_count < 7` → `< 4`
-- After STORAGE_SET received at boot, MB1 now sends `INIT:a,b` radio to MB2
-- Refill mode sends `REFILL:X` before the count loop and `SERVO_STEP:X` on each button press
+- Storage defaults changed: `storage_a/b = 7` → `4`; refill loop cap `< 7` → `< 4`
+- After `STORAGE_SET:` received (boot or runtime reconnect), MB1 immediately sends `INIT:a,b` radio to MB2 to restore servo positions
+- Refill mode: sends `REFILL:X` before count loop; sends `SERVO_STEP:X` on each button press; sends `INIT:a,b` again after refill completes so MB2 is positioned at the correct slot
+- **Button release guard added**: refill entry waits for all buttons released and clears `was_pressed()` before starting the count loop — prevents spurious first-step advance caused by the long-press still being held
+- Main loop body wrapped in `try/except` — catches crashes during refill/dispense, refreshes OLED, and continues running
 
 ### System — 4-pill capacity throughout
 
-- Dashboard storage: `/7` → `/4`; low warning threshold revised to 1 pill remaining
+- Dashboard storage: `/7` → `/4`; low warning threshold revised to 1 pill remaining; storage card always starts as `- / 4` placeholder (no stale Jinja flash on page load)
+- Dashboard poll interval reduced 5s → 2s for faster storage updates after dispense
 - Schedule page: per-type limit of 4 (A and B independently); shows `Type A: X/4 | Type B: X/4`; type dropdown hides types at their limit
 - ESP32 NVS defaults, `mqtt_bridge.py` in-memory defaults, all docs updated to reflect capacity of 4
 
-## Up Next
-- Integration testing: boot sequence, INIT restore, schedule trigger, refill flow
-- MB2 physical wiring: P0 → Servo A, P1 → Servo B, 6–8.4V external supply, common GND
+### Storage sync — reconnect handling
+
+- `mqtt_bridge.py` detects first `dispenser/ping` after a >15s gap (ESP32 was offline); on reconnect, pushes authoritative `set_storage` from `state.json` to MB1 via MQTT → ESP32 → UART — prevents stale ESP32 NVS overwriting the correct count
+
+### Bug fixes
+
+- **Storage count wrong after reconnect**: ESP32 NVS defaulted to 4 after reflash, sent `STORAGE_SET:4,4` overwriting actual 2. Fixed by mqtt_bridge pushing correct count from `state.json` on first ping after offline
+- **MB2 shows X when pills remain (post-web-dispense)**: MB2 slot counter was stale. Fixed by MB1 resending `INIT:a,b` whenever `STORAGE_SET` is received at runtime
+- **MB2 shows X after refill**: After refill, MB2 slot counter sat at `MAX_SLOTS` from repeated `SERVO_STEP`. Fixed by MB1 sending `INIT:storage_a,storage_b` after refill completes
+- **Arrow shown but servo not moving**: `display.show(ARROW_E)` was outside the `slot_a > 0` guard — showed arrow even when guard failed. Moved inside guard; shows `Image.NO` when slot is already 0
+- **Slot 0 advance on refill entry**: Long-press left button held; `was_pressed()` returned True immediately in refill loop. Fixed by explicit wait-for-release before loop starts
+
+### Demo site (`demo.html`)
+
+- Added Settings page (Telegram UID, bot token, notification toggles, temp/humidity alert thresholds) — fully dummy, editable for screenshots
+- Fixed dispense alert wording to match real app (`'Dispense command sent for type A'`, not `'✅ Dispense command sent for type A (normal)'`)
+- Removed stale `preview/` folder and related docs references
+- Added direct `demo.html` link to root `README.md`
+
+### Experiment: servo-cal
+
+- Created `experiments/servo-cal/` — MQTT-driven per-slot pulse width calibration, no reflashing needed
+- MB1 bridges UART → radio (group 43); MB2 receives `CAL:A,us` and sets servo PWM directly
+- ESP32 subscribes to `dispenser/cal`, validates JSON `{wheel, us}`, forwards to MB1
+- Calibration table documented in `experiments/servo-cal/README.md`; values applied to main project after calibration
