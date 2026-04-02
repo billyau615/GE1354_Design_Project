@@ -348,18 +348,21 @@ read_sensors()
 sensor_timer = 15
 
 while True:
-    read_uart()
-    check_long_press()
-    rh, rm, rs = read_ds3231()
-    if rh is not None:
-        h, m, s = rh, rm, rs
-        if m != prev_m:
-            dispensed_this_minute = False
-            prev_m = m
-        check_schedules()
-    sensor_timer -= 1
-    if sensor_timer <= 0:
-        read_sensors()
-        sensor_timer = 15
-    update_oled()
+    try:
+        read_uart()
+        check_long_press()
+        rh, rm, rs = read_ds3231()
+        if rh is not None:
+            h, m, s = rh, rm, rs
+            if m != prev_m:
+                dispensed_this_minute = False
+                prev_m = m
+            check_schedules()
+        sensor_timer -= 1
+        if sensor_timer <= 0:
+            read_sensors()
+            sensor_timer = 15
+        update_oled()
+    except Exception:
+        update_oled()
     sleep(1000)

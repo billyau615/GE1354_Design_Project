@@ -45,11 +45,11 @@ Slot pulse widths:
 
 | Slot | µs | State |
 |---|---|---|
-| 0 | 500 | Home (full — no pills dispensed yet) |
-| 1 | 1000 | 1 pill dispensed |
-| 2 | 1500 | 2 pills dispensed |
-| 3 | 2000 | 3 pills dispensed |
-| 4 | 2500 | 4 pills dispensed (empty) |
+| 0 | 500 | Empty — all pills dispensed, slot 0 at hole |
+| 1 | 1000 | 1 pill remaining (slot 1 at hole) |
+| 2 | 1500 | 2 pills remaining |
+| 3 | 2000 | 3 pills remaining |
+| 4 | 2500 | Full (4 pills) — slot 4 at hole, ready to dispense |
 
 PWM is kept active continuously — releasing the signal causes servo hunting.
 
@@ -71,10 +71,10 @@ All messages are received from MB1 (`radio.receive()`). MB2 sends no messages ba
 
 | Message | Action |
 |---|---|
-| `INIT:a,b` | Restore servo positions from storage counts: `slot = 4 - count`, move each servo to `HOME_US + slot * STEP_US` |
-| `DISPENSE:A` | If `slot_a < 4`: `slot_a += 1`, advance Servo A one step |
-| `DISPENSE:B` | If `slot_b < 4`: `slot_b += 1`, advance Servo B one step |
-| `DISPENSE:AB` | Advance both servos (each independently guarded by their slot limit) |
+| `INIT:a,b` | Restore servo positions from storage counts: `slot = count`, move each servo to `HOME_US + slot * STEP_US` |
+| `DISPENSE:A` | If `slot_a > 0`: `slot_a -= 1`, move Servo A back one step (pill drops) |
+| `DISPENSE:B` | If `slot_b > 0`: `slot_b -= 1`, move Servo B back one step |
+| `DISPENSE:AB` | Decrement both servos (each independently guarded) |
 | `REFILL:A` | `slot_a = 0`, move Servo A to HOME (500µs) |
 | `REFILL:B` | `slot_b = 0`, move Servo B to HOME (500µs) |
 | `SERVO_STEP:A` | If `slot_a < 4`: `slot_a += 1`, advance Servo A one step (used during MB1 refill mode) |
@@ -82,18 +82,18 @@ All messages are received from MB1 (`radio.receive()`). MB2 sends no messages ba
 
 ### INIT position restore
 
-When MB1 boots, it receives storage counts from the ESP32 (`STORAGE_SET:a,b`) and immediately sends `INIT:a,b` via radio. MB2 converts remaining pill counts to slot positions:
+When MB1 boots, it receives storage counts from the ESP32 (`STORAGE_SET:a,b`) and immediately sends `INIT:a,b` via radio. MB2 sets slot positions directly from the counts:
 
 ```
-slot_a = 4 - storage_a    # e.g. storage_a=3 → slot_a=1 → 1000µs
-slot_b = 4 - storage_b
+slot_a = storage_a    # e.g. storage_a=3 → slot_a=3 → 2000µs
+slot_b = storage_b
 ```
 
 This positions each servo at the correct angle for the next dispense without resetting to home.
 
 ### DISPENSE guard
 
-If a dispense command arrives when a servo is already at slot 4 (all pills exhausted), the servo does not move. The LED matrix still shows the arrow animation.
+If a dispense command arrives when `slot_a == 0` (empty), the servo does not move and the LED shows ✗ instead of the arrow.
 
 ---
 
@@ -116,7 +116,4 @@ The lid is fixed in place. Pills are loaded through the dispense hole one at a t
 | Idle / waiting | `"2"` |
 | DISPENSE:A or DISPENSE:AB — servo moved | Arrow right (→), 500ms |
 | DISPENSE:B — servo moved | Arrow left (←), 500ms |
-| DISPENSE received but slot already at MAX (empty) | ✗ (NO image), 500ms |
-
-
-These allow slot-by-slot testing without MB1 or radio commands.
+| DISPENSE received but `slot == 0` (empty) | ✗ (NO image), 500ms |

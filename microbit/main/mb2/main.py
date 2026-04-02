@@ -32,15 +32,15 @@ while True:
                 try:
                     a = int(parts[0])
                     b = int(parts[1])
-                    slot_a = 4 - a
-                    slot_b = 4 - b
+                    slot_a = a
+                    slot_b = b
                     set_servo(SERVO_A, HOME_US + slot_a * STEP_US)
                     set_servo(SERVO_B, HOME_US + slot_b * STEP_US)
                 except ValueError:
                     pass
         elif msg == "DISPENSE:A":
-            if slot_a < MAX_SLOTS:
-                slot_a += 1
+            if slot_a > 0:
+                slot_a -= 1
                 set_servo(SERVO_A, HOME_US + slot_a * STEP_US)
                 display.show(Image.ARROW_E)
             else:
@@ -48,8 +48,8 @@ while True:
             sleep(500)
             display.show("2")
         elif msg == "DISPENSE:B":
-            if slot_b < MAX_SLOTS:
-                slot_b += 1
+            if slot_b > 0:
+                slot_b -= 1
                 set_servo(SERVO_B, HOME_US + slot_b * STEP_US)
                 display.show(Image.ARROW_W)
             else:
@@ -58,12 +58,12 @@ while True:
             display.show("2")
         elif msg == "DISPENSE:AB":
             moved = False
-            if slot_a < MAX_SLOTS:
-                slot_a += 1
+            if slot_a > 0:
+                slot_a -= 1
                 set_servo(SERVO_A, HOME_US + slot_a * STEP_US)
                 moved = True
-            if slot_b < MAX_SLOTS:
-                slot_b += 1
+            if slot_b > 0:
+                slot_b -= 1
                 set_servo(SERVO_B, HOME_US + slot_b * STEP_US)
                 moved = True
             display.show(Image.ARROW_E if moved else Image.NO)
