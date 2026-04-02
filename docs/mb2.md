@@ -26,7 +26,7 @@ Micro:bit #2 is the actuation node of the drug dispenser. It listens for radio c
 
 No additional driver files are required. The servo is driven directly via `pin.set_analog_period_microseconds()` and `pin.write_analog()`.
 
-> **Flashing:** Use **Thonny** or the Micro:bit web editor — `main.py` is small enough for either.
+> **Flashing:** Use the **Micro:bit web editor** to flash `main.py`.
 
 ---
 

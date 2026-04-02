@@ -33,6 +33,8 @@ All files are located in `microbit/main/mb1/`.
 | `dht20.py` | DHT20 sensor driver: single-shot measurement |
 | `ds3231.py` | DS3231 RTC driver: read/write time, BCD encode/decode |
 
+> **Flashing:** Files must be transferred individually using the **Micro:bit web editor** (right-click each `.py` → Upload to /).
+
 ---
 
 ## Boot Sequence

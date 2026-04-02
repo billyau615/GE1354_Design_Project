@@ -87,7 +87,7 @@ Full integrated system built across all components:
 ### MB1 — Source size
 
 - All comments stripped from MB1 `.py` files to reduce combined source from ~20 KB to ~16 KB
-- Files can be flashed via the **Micro:bit web editor** or **Thonny** (View → Files → Upload to /)
+- Files can be flashed via the **Micro:bit web editor**
 
 ### Web dashboard
 
