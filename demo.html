@@ -40,6 +40,7 @@
       <ul class="navbar-nav ms-auto">
         <li class="nav-item"><a class="nav-link active-page" href="#" onclick="showPage('dashboard',this)">Dashboard</a></li>
         <li class="nav-item"><a class="nav-link" href="#" onclick="showPage('schedules',this)">Schedules</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" onclick="showPage('settings',this)">Settings</a></li>
       </ul>
     </div>
   </div>
@@ -185,6 +186,54 @@
       <div id="warn-a" class="text-warning mt-2 mb-0" style="font-size:.9rem;display:none">Type A is at the daily limit (4/4).</div>
       <div id="warn-b" class="text-warning mt-2 mb-0" style="font-size:.9rem;display:none">Type B is at the daily limit (4/4).</div>
     </div>
+  </div>
+
+  <!-- ── SETTINGS PAGE ── -->
+  <div id="page-settings" class="page">
+    <h2 class="mt-4">Settings</h2>
+    <form onsubmit="saveSettings(event)" class="mt-3 w-100" style="max-width:480px">
+
+      <h5>Telegram Notifications</h5>
+      <div class="mb-3">
+        <label class="form-label">Bot Token</label>
+        <input type="password" id="set-bot-token" class="form-control" placeholder="Leave blank to keep existing token">
+        <small class="text-muted">Get from <a href="https://t.me/BotFather" target="_blank">@BotFather</a>. Leave blank to keep current value.</small>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Telegram User ID(s)</label>
+        <input type="text" id="set-uid" class="form-control" value="123456789" placeholder="e.g. 123456789 or 123456789,987654321">
+        <small class="text-muted">Separate multiple IDs with commas. Find your ID via <a href="https://t.me/userinfobot" target="_blank">@userinfobot</a>.</small>
+      </div>
+
+      <h5 class="mt-4">Notification Toggles</h5>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" id="set-notify-env" checked>
+        <label class="form-check-label" for="set-notify-env">Environment alerts (temperature &amp; humidity)</label>
+      </div>
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="set-notify-storage" checked>
+        <label class="form-check-label" for="set-notify-storage">Storage empty alerts</label>
+      </div>
+
+      <h5 class="mt-4">Alert Thresholds</h5>
+      <div class="row g-3 mb-3">
+        <div class="col-6">
+          <label class="form-label">Temperature (°C)</label>
+          <input type="number" id="set-temp" class="form-control" step="0.5" value="35.0">
+        </div>
+        <div class="col-6">
+          <label class="form-label">Humidity (%)</label>
+          <input type="number" id="set-humi" class="form-control" step="1" value="80">
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Environment Alert Cooldown (seconds)</label>
+        <input type="number" id="set-cooldown" class="form-control" min="0" step="1" value="300">
+        <small class="text-muted">Minimum time between repeated environment alerts. Storage alerts are always sent immediately and ignore this setting.</small>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100">Save</button>
+    </form>
   </div>
 
 </div><!-- /container -->
@@ -393,7 +442,7 @@ function deleteSchedule(i) {
 function demoDispense(type, mode) {
   const label = mode === 'manual' ? 'Manual dispense' : 'Dispense';
   if (!confirm(label + ' type ' + type + '?')) return;
-  alert('✅ Dispense command sent for type ' + type + ' (' + mode + ')');
+  alert('Dispense command sent for type ' + type);
   // Decrement storage visually
   if ((type === 'A' || type === 'AB') && state.storageA > 0) {
     state.storageA--;
@@ -453,6 +502,12 @@ function togglePanel() {
     tog.textContent = '[expand]';
     document.body.style.paddingBottom = '48px';
   }
+}
+
+// ── Settings (demo) ──────────────────────────────────────────────────────────
+function saveSettings(e) {
+  e.preventDefault();
+  alert('Settings saved.');
 }
 
 // ── Init ─────────────────────────────────────────────────────────────────────
