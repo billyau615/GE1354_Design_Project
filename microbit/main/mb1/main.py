@@ -229,6 +229,10 @@ def enter_refill_mode(type_str):
             if button_b.was_pressed():
                 return
             sleep(50)
+    while button_a.is_pressed() or button_b.is_pressed():
+        sleep(50)
+    button_a.was_pressed()
+    button_b.was_pressed()
     radio.send("REFILL:" + type_str)
     slot_count = 0
     clear_oled()
