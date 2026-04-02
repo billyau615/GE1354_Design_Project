@@ -72,12 +72,6 @@ Small test projects to validate individual components before integration:
 | [ds3231](experiments/ds3231/) | Fetch NTP time from ESP32 via UART, write to DS3231 RTC, display time from RTC on OLED |
 | [servo-test](experiments/servo-test/) | Calibrate JX BLS-HV7146MG servo for 4-slot rotary pill dispenser (MB2) |
 
-## Web UI Preview
+## Web UI Demo
 
-Static HTML mock-ups of the web interface — open directly in a browser, no server required.
-
-| Page | File |
-|---|---|
-| Dashboard | [preview/dashboard.html](preview/dashboard.html) |
-| Schedules | [preview/schedules.html](preview/schedules.html) |
-| Settings | [preview/settings.html](preview/settings.html) |
+Interactive demo of the full web interface — open [demo.html](demo.html) directly in a browser, no server required. Includes editable dummy values for storage, sensor readings, countdown, and device status.
