@@ -66,7 +66,6 @@ def index():
     schedules = load_schedules()
     return render_template(
         "index.html",
-        storage=mqtt_bridge.get_storage(),
         sensor=mqtt_bridge.get_sensor(),
         schedules=schedules,
         countdown=next_countdown(schedules),

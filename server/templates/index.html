@@ -37,21 +37,13 @@
   <div class="col-6 col-md-3">
     <div class="card p-3">
       <div class="storage-label mb-1">{{ label }}</div>
-      <div class="storage-count" id="storage-count-{{ key }}">{{ storage[key] }} / 4</div>
+      <div class="storage-count" id="storage-count-{{ key }}">- / 4</div>
       <div class="pill-bar">
         <div class="pill-bar-fill" id="storage-bar-{{ key }}"
-             style="width:{{ (storage[key] / 4 * 100)|int }}%;
-                    background-color:{% if storage[key] == 0 %}#dc3545{% elif storage[key] <= 1 %}#ffc107{% else %}#198754{% endif %}">
+             style="width:0%;background-color:#6c757d">
         </div>
       </div>
-      <small id="storage-warn-{{ key }}" class="mt-1
-        {% if storage[key] == 0 %}text-danger
-        {% elif storage[key] <= 1 %}text-warning
-        {% else %}invisible{% endif %}">
-        {% if storage[key] == 0 %}Empty — please refill
-        {% elif storage[key] <= 1 %}Low — refill soon
-        {% else %}&nbsp;{% endif %}
-      </small>
+      <small id="storage-warn-{{ key }}" class="mt-1 invisible">&nbsp;</small>
     </div>
   </div>
   {% endfor %}
