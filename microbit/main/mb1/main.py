@@ -77,6 +77,7 @@ def parse_uart_line(line):
             try:
                 storage_a = int(parts[0])
                 storage_b = int(parts[1])
+                radio.send("INIT:{},{}".format(storage_a, storage_b))
             except ValueError:
                 pass
     elif line.startswith("DISPENSE:"):
