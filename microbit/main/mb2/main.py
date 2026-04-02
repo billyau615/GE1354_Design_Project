@@ -1,4 +1,4 @@
-from microbit import pin0, pin1, button_a, button_b, display, Image, sleep
+from microbit import pin0, pin1, display, Image, sleep
 import radio
 
 radio.on()
@@ -76,21 +76,5 @@ while True:
             if slot_b < MAX_SLOTS:
                 slot_b += 1
                 set_servo(SERVO_B, HOME_US + slot_b * STEP_US)
-
-    if button_a.was_pressed():
-        if slot_a < MAX_SLOTS:
-            slot_a += 1
-            set_servo(SERVO_A, HOME_US + slot_a * STEP_US)
-        display.show(str(slot_a))
-        sleep(500)
-        display.show("2")
-
-    if button_b.was_pressed():
-        if slot_b < MAX_SLOTS:
-            slot_b += 1
-            set_servo(SERVO_B, HOME_US + slot_b * STEP_US)
-        display.show(str(slot_b))
-        sleep(500)
-        display.show("2")
 
     sleep(50)

@@ -116,15 +116,6 @@ The lid is fixed in place. Pills are loaded through the dispense hole one at a t
 | Idle / waiting | `"2"` |
 | DISPENSE:A or DISPENSE:AB | Arrow right (→), 500ms |
 | DISPENSE:B | Arrow left (←), 500ms |
-| Button A/B pressed (manual test) | Current `slot_a` or `slot_b` count, 500ms |
 
----
-
-## Button Controls (Manual Testing)
-
-| Button | Action |
-|---|---|
-| A | Advance Servo A one slot (if `slot_a < 4`); show `slot_a` for 500ms |
-| B | Advance Servo B one slot (if `slot_b < 4`); show `slot_b` for 500ms |
 
 These allow slot-by-slot testing without MB1 or radio commands.
