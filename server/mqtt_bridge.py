@@ -89,7 +89,12 @@ def _on_message(client, userdata, msg):
 
     if topic == "dispenser/ping":
         with _lock:
+            was_online = (time.time() - _ping_ts) < 15
             _ping_ts = time.time()
+            a, b = _storage["a"], _storage["b"]
+        if not was_online:
+            # ESP32 just came online — push authoritative storage from state.json to MB1
+            client.publish("dispenser/command", json.dumps({"action": "set_storage", "a": a, "b": b}))
         return
 
     try:
