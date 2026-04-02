@@ -1,6 +1,6 @@
 # Micro:bit #2 — Component Documentation
 
-> Last updated: 2 April 2026
+> Last updated: 2 April 2026 (UTC+8)
 
 Micro:bit #2 is the actuation node of the drug dispenser. It listens for radio commands from MB1 and drives two servo motors to dispense or load pills. It has no UART, no sensors, and no display logic beyond a status indicator.
 

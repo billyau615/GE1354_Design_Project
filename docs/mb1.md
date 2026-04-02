@@ -68,7 +68,9 @@ After all three waits, the OLED is cleared, the first DHT20 reading is taken, an
 
 ## Main Loop
 
-The main loop runs once per second (`sleep(1000)` at the end). Each iteration:
+The main loop runs once per second (`sleep(1000)` at the end). Each iteration is wrapped in a `try/except` so any unexpected error (I2C glitch, radio issue, memory spike) is caught, the OLED is refreshed, and the loop continues rather than crashing the program.
+
+Each iteration:
 
 1. **`read_uart()`** — reads any pending bytes from the ESP32 and dispatches complete lines
 2. **`check_long_press()`** — detects held buttons for refill mode entry
@@ -143,12 +145,13 @@ Entered by holding button A (Type A) or button B (Type B) for approximately 1 se
 - Button A confirms zero-reset; Button B cancels without changes
 
 **Refill counting loop:**
-- Before the loop starts, MB1 sends `REFILL:X` to MB2, which resets that servo to HOME (slot 0, 500µs) — dispense hole is now at the first empty slot
-- OLED shows `"Refill X"` (small text); LED matrix shows current slot count (0–4)
-- Press the same button (A for Type A, B for Type B) once per pill: MB1 increments the count and sends `SERVO_STEP:X` to MB2, advancing the servo one slot so the next empty slot is at the dispense hole
-- Press the other button to exit
+- Before the loop starts, MB1 waits for all buttons to be fully released and clears the `was_pressed()` state — this prevents the long-press that triggered refill mode from immediately advancing slot 1
+- MB1 sends `REFILL:X` to MB2, which resets that servo to slot 0 (500µs) — dispense hole is now at slot 0
+- OLED shows `"Refill X"` (small text); LED matrix shows current slot count (starts at `0`)
+- Press the same button (A for Type A, B for Type B) once per pill: MB1 increments the count and sends `SERVO_STEP:X` to MB2, advancing the servo one slot so the next slot is at the dispense hole
+- Press the other button to exit early
 
-On exit, the new count is saved to `storage_a`/`storage_b` and reported via UART (`STORAGE:a,b`).
+On exit, the new count is saved to `storage_a`/`storage_b`, reported via UART (`STORAGE:a,b`), and `INIT:a,b` is sent to MB2 so the servo repositions to the correct dispense-ready slot (slot 4 = 2500µs when fully refilled).
 
 ---
 
@@ -176,8 +179,8 @@ The SSD1306 is a 128×64 pixel display divided into 8 horizontal pages (each 8 p
 | Pages | Content | Example | Update rate |
 |---|---|---|---|
 | 0–1 | Current time (12-hour, AM/PM) | `1:30 PM` (no leading zero) | Every second |
-| 2–3 | Humidity | `H:62.5%` | Every 30 seconds |
-| 4–5 | Temperature | `T:28.3C` | Every 30 seconds |
+| 2–3 | Humidity | `H:62.5%` | Every ~15 seconds |
+| 4–5 | Temperature | `T:28.3C` | Every ~15 seconds |
 | 6–7 | Countdown to next dose | `Nx:1H 25M` or `No sched` | Every second |
 
 The countdown skips schedules whose `delta == 0` (the current minute), so immediately after a dose is dispensed it shows the next future event rather than `0H 00M`.
@@ -226,6 +229,6 @@ Shown from the moment a normal dispense starts until the IR sensor is triggered:
 | Direction | Message | Meaning |
 |---|---|---|
 | MB1→MB2 | `DISPENSE:A/B/AB` | Activate servo for dispensing |
-| MB1→MB2 | `INIT:a,b` | On boot — restore servo positions from storage counts |
+| MB1→MB2 | `INIT:a,b` | Restore servo positions from storage counts — sent on boot, after `STORAGE_SET` received at runtime, and after refill completes |
 | MB1→MB2 | `REFILL:A/B` | Reset servo to HOME before refill counting loop |
 | MB1→MB2 | `SERVO_STEP:A/B` | Advance servo one slot per button press during refill |

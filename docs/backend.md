@@ -1,6 +1,6 @@
 # Python Backend — Component Documentation
 
-> Last updated: 2 April 2026
+> Last updated: 2 April 2026 (UTC+8)
 
 The backend is a Python application running on the server. It consists of three modules:
 
@@ -55,16 +55,15 @@ When run directly (`__main__`), it reads up to three CLI arguments (broker host,
 
 #### `GET /`
 
-Renders the dashboard (`index.html`). Passes four template variables:
+Renders the dashboard (`index.html`). Passes three template variables:
 
 | Variable | Source | Description |
 |---|---|---|
-| `storage` | `mqtt_bridge.get_storage()` | Dict `{"a": int, "b": int}` |
 | `sensor` | `mqtt_bridge.get_sensor()` | Dict with `temp`, `humidity`, `updated` keys |
 | `schedules` | `load_schedules()` | List from `schedules.json` |
 | `countdown` | `next_countdown(schedules)` | String like `"1H 25M"` or `None` |
 
-The server-side render sets the initial state of the page. JavaScript then takes over and polls the API endpoints every 5 seconds to keep data fresh without a page reload.
+Storage is intentionally excluded — the page always starts with a `- / 4` placeholder and JavaScript immediately populates the real value on first poll, avoiding a stale flash from `state.json`.
 
 #### `GET /api/storage`
 
@@ -93,7 +92,7 @@ Computed server-side using `next_countdown()` with the current system time. Poll
 #### `GET /POST /schedules`
 
 - **GET**: Renders `schedules.html` with the current schedule list
-- **POST**: Validates the submitted time and type, appends to the list (if fewer than 6 exist), sorts by time, saves to `schedules.json`, and publishes the full list to the MQTT broker via `mqtt_bridge.publish_schedules()`. Redirects to GET after processing.
+- **POST**: Validates the submitted time and type, enforces a per-type limit of 4 (Type A and B counted independently; AB counts toward both), appends if within limits, sorts by time, saves to `schedules.json`, and publishes the full list to the MQTT broker via `mqtt_bridge.publish_schedules()`. Redirects to GET after processing.
 
 #### `POST /schedules/delete/<int:idx>`
 
@@ -150,7 +149,7 @@ These are accessed by Flask routes via `get_sensor()`, `get_storage()`, and `get
 
 | Topic | Handler behaviour |
 |---|---|
-| `dispenser/ping` | Updates `_ping_ts` with `time.time()`. Used for online detection. No JSON parsing. |
+| `dispenser/ping` | Updates `_ping_ts`. If the device was previously offline (last ping > 15s ago), immediately publishes `{"action": "set_storage", "a": a, "b": b}` to `dispenser/command` to push authoritative storage counts from `state.json` to MB1 — correcting any stale NVS value on the ESP32. |
 | `dispenser/sensor` | Updates `_sensor` with temp, humidity, IP address, and `"Mmm DD, YYYY HH:MM"` timestamp. Checks values against thresholds. Sends Telegram alert if threshold exceeded and cooldown has elapsed. |
 | `dispenser/storage` | Updates `_storage["a"]` and `_storage["b"]`. Writes to `state.json`. Sends Telegram alert if `empty_a` or `empty_b` flag is present. |
 | `dispenser/dispense_done` | Prints to console (no further action currently). |
