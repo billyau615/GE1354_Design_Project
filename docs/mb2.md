@@ -36,20 +36,18 @@ Both servos use identical calibration values (JX BLS-HV7146MG, 180°):
 
 | Parameter | Value | Notes |
 |---|---|---|
-| `HOME_US` | 500µs | Slot 0 — home/resting position |
-| `STEP_US` | 500µs | Pulse width increment per slot |
 | `MAX_SLOTS` | 4 | Slots 0 → 1 → 2 → 3 → 4 |
 | `PERIOD_US` | 20000µs | 50 Hz PWM signal |
 
-Slot pulse widths:
+Slot pulse widths (calibrated per-wheel — spacing is non-uniform):
 
-| Slot | µs | State |
-|---|---|---|
-| 0 | 500 | Empty — all pills dispensed, slot 0 at hole |
-| 1 | 1000 | 1 pill remaining (slot 1 at hole) |
-| 2 | 1500 | 2 pills remaining |
-| 3 | 2000 | 3 pills remaining |
-| 4 | 2500 | Full (4 pills) — slot 4 at hole, ready to dispense |
+| Slot | Wheel A (µs) | Wheel B (µs) | State |
+|---|---|---|---|
+| 0 | 500 | 500 | Empty — all pills dispensed, slot 0 at hole |
+| 1 | 900 | 970 | 1 pill remaining |
+| 2 | 1400 | 1450 | 2 pills remaining |
+| 3 | 1900 | 1970 | 3 pills remaining |
+| 4 | 2400 | 2450 | Full (4 pills) — slot 4 at hole, ready to dispense |
 
 PWM is kept active continuously — releasing the signal causes servo hunting.
 

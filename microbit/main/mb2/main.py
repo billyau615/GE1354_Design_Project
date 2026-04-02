@@ -4,8 +4,8 @@ import radio
 radio.on()
 radio.config(group=42)
 
-HOME_US   = 500
-STEP_US   = 500
+SLOTS_A   = [500, 900, 1400, 1900, 2400]
+SLOTS_B   = [500, 970, 1450, 1970, 2450]
 MAX_SLOTS = 4
 PERIOD_US = 20000
 
@@ -34,14 +34,14 @@ while True:
                     b = int(parts[1])
                     slot_a = a
                     slot_b = b
-                    set_servo(SERVO_A, HOME_US + slot_a * STEP_US)
-                    set_servo(SERVO_B, HOME_US + slot_b * STEP_US)
+                    set_servo(SERVO_A, SLOTS_A[slot_a])
+                    set_servo(SERVO_B, SLOTS_B[slot_b])
                 except ValueError:
                     pass
         elif msg == "DISPENSE:A":
             if slot_a > 0:
                 slot_a -= 1
-                set_servo(SERVO_A, HOME_US + slot_a * STEP_US)
+                set_servo(SERVO_A, SLOTS_A[slot_a])
                 display.show(Image.ARROW_E)
             else:
                 display.show(Image.NO)
@@ -50,7 +50,7 @@ while True:
         elif msg == "DISPENSE:B":
             if slot_b > 0:
                 slot_b -= 1
-                set_servo(SERVO_B, HOME_US + slot_b * STEP_US)
+                set_servo(SERVO_B, SLOTS_B[slot_b])
                 display.show(Image.ARROW_W)
             else:
                 display.show(Image.NO)
@@ -60,28 +60,28 @@ while True:
             moved = False
             if slot_a > 0:
                 slot_a -= 1
-                set_servo(SERVO_A, HOME_US + slot_a * STEP_US)
+                set_servo(SERVO_A, SLOTS_A[slot_a])
                 moved = True
             if slot_b > 0:
                 slot_b -= 1
-                set_servo(SERVO_B, HOME_US + slot_b * STEP_US)
+                set_servo(SERVO_B, SLOTS_B[slot_b])
                 moved = True
             display.show(Image.ARROW_E if moved else Image.NO)
             sleep(500)
             display.show("2")
         elif msg == "REFILL:A":
             slot_a = 0
-            set_servo(SERVO_A, HOME_US)
+            set_servo(SERVO_A, SLOTS_A[0])
         elif msg == "REFILL:B":
             slot_b = 0
-            set_servo(SERVO_B, HOME_US)
+            set_servo(SERVO_B, SLOTS_B[0])
         elif msg == "SERVO_STEP:A":
             if slot_a < MAX_SLOTS:
                 slot_a += 1
-                set_servo(SERVO_A, HOME_US + slot_a * STEP_US)
+                set_servo(SERVO_A, SLOTS_A[slot_a])
         elif msg == "SERVO_STEP:B":
             if slot_b < MAX_SLOTS:
                 slot_b += 1
-                set_servo(SERVO_B, HOME_US + slot_b * STEP_US)
+                set_servo(SERVO_B, SLOTS_B[slot_b])
 
     sleep(50)
