@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Drug Dispenser — Demo</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <style>
+    body { padding-top: 70px; background: #f8f9fa; }
+    .card { border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.07); }
+    .storage-count { font-size: 3.2rem; font-weight: 700; line-height: 1; }
+    .storage-label { font-size: 0.85rem; color: #6c757d; text-transform: uppercase; letter-spacing: .05em; }
+    .sensor-val { font-size: 2rem; font-weight: 600; white-space: nowrap; }
+    .pill-bar { height: 10px; border-radius: 5px; background: #e9ecef; overflow: hidden; margin-top: .5rem; }
+    .pill-bar-fill { height: 100%; border-radius: 5px; transition: width .4s, background-color .4s; }
+    .section-title { font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+                     letter-spacing: .08em; color: #6c757d; margin-bottom: .75rem; }
+    /* Demo panel */
+    #demo-panel { position: fixed; bottom: 0; left: 0; right: 0; background: #1e293b; color: #e2e8f0;
+                  z-index: 2000; padding: 12px 20px; font-size: .82rem; border-top: 2px solid #334155; }
+    #demo-panel label { color: #94a3b8; font-size: .75rem; display: block; margin-bottom: 2px; }
+    #demo-panel input, #demo-panel select { font-size: .8rem; padding: 3px 6px; }
+    #demo-toggle { cursor: pointer; user-select: none; }
+    body { padding-bottom: 160px; }
+    .page { display: none; }
+    .page.active { display: block; }
+    .nav-link.active-page { color: #fff !important; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+  <div class="container">
+    <a class="navbar-brand fw-semibold" href="#">💊 Drug Dispenser</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link active-page" href="#" onclick="showPage('dashboard',this)">Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" onclick="showPage('schedules',this)">Schedules</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container" style="max-width:900px">
+
+  <!-- ── DASHBOARD PAGE ── -->
+  <div id="page-dashboard" class="page active">
+    <h4 class="mb-3 mt-4">Dashboard</h4>
+
+    <!-- Device status -->
+    <p class="section-title">Device</p>
+    <div class="card p-3 mb-4 d-flex flex-row align-items-center gap-3">
+      <span id="status-dot" style="width:14px;height:14px;border-radius:50%;background:#198754;flex-shrink:0"></span>
+      <div>
+        <span id="status-text" class="fw-semibold">Online</span>
+        <span id="status-ip" class="text-muted ms-2" style="font-size:.85rem">192.168.1.42</span>
+      </div>
+    </div>
+
+    <!-- Storage -->
+    <p class="section-title">Storage</p>
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="card p-3">
+          <div class="storage-label mb-1">Type A</div>
+          <div class="storage-count" id="storage-count-a">3 / 4</div>
+          <div class="pill-bar">
+            <div class="pill-bar-fill" id="storage-bar-a" style="width:75%;background-color:#198754"></div>
+          </div>
+          <small id="storage-warn-a" class="mt-1 invisible">&nbsp;</small>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card p-3">
+          <div class="storage-label mb-1">Type B</div>
+          <div class="storage-count" id="storage-count-b">1 / 4</div>
+          <div class="pill-bar">
+            <div class="pill-bar-fill" id="storage-bar-b" style="width:25%;background-color:#ffc107"></div>
+          </div>
+          <small id="storage-warn-b" class="mt-1 text-warning">Low — refill soon</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dispense -->
+    <p class="section-title">Dispense</p>
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-md-6">
+        <div class="card p-3 h-100">
+          <div class="storage-label mb-2">Normal — buzzer &amp; alert</div>
+          <div class="d-flex gap-2 flex-wrap">
+            <button class="btn btn-sm btn-primary" onclick="demoDispense('A','normal')">Type A</button>
+            <button class="btn btn-sm btn-primary" onclick="demoDispense('B','normal')">Type B</button>
+            <button class="btn btn-sm btn-primary" onclick="demoDispense('AB','normal')">A + B</button>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="card p-3 h-100">
+          <div class="storage-label mb-2">Manual — silent drop</div>
+          <div class="d-flex gap-2 flex-wrap">
+            <button class="btn btn-sm btn-outline-secondary" onclick="demoDispense('A','manual')">Type A</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="demoDispense('B','manual')">Type B</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Environment -->
+    <p class="section-title d-flex flex-wrap align-items-center gap-2">
+      Environment
+      <span class="fw-normal" style="text-transform:none;letter-spacing:0;font-size:.75rem;color:#9ca3af" id="sensor-updated">
+        Last updated: 14:23:05
+      </span>
+    </p>
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-2">
+        <div class="card p-3 text-center">
+          <div class="text-muted small">Temperature</div>
+          <div class="sensor-val text-danger" id="sensor-temp">26.4°C</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-2">
+        <div class="card p-3 text-center">
+          <div class="text-muted small">Humidity</div>
+          <div class="sensor-val text-info" id="sensor-humi">62.1%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upcoming schedules -->
+    <p class="section-title">
+      Upcoming Schedules
+      <span class="badge bg-info text-dark ms-1" id="countdown-badge">
+        Next in <span id="countdown-text">1H 25M</span>
+      </span>
+    </p>
+    <div class="table-responsive">
+      <table class="table table-sm table-bordered bg-white" id="sched-table-dash">
+        <thead class="table-light"><tr><th>Time</th><th>Type</th></tr></thead>
+        <tbody id="sched-tbody-dash"></tbody>
+      </table>
+    </div>
+    <a href="#" class="btn btn-sm btn-outline-secondary" onclick="showPage('schedules',null)">Manage schedules →</a>
+  </div>
+
+  <!-- ── SCHEDULES PAGE ── -->
+  <div id="page-schedules" class="page">
+    <h2 class="mt-4">Schedules</h2>
+    <p class="text-muted">Each type (A and B) can be scheduled up to 4 times per day, matching the 4-pill capacity of each dispenser wheel. On each schedule, the selected type(s) will be dispensed and the alarm will sound.</p>
+
+    <div class="table-responsive">
+      <table class="table table-bordered" id="sched-table-main">
+        <thead><tr><th>#</th><th>Time</th><th>Type</th><th></th></tr></thead>
+        <tbody id="sched-tbody-main"></tbody>
+      </table>
+    </div>
+
+    <div id="sched-limit-msg" class="text-warning mt-3" style="display:none">Both types at maximum (4/day). Delete a schedule to add another.</div>
+
+    <div id="add-sched-form">
+      <h5 class="mt-4">Add Schedule</h5>
+      <p class="text-muted mb-2" style="font-size:.9rem" id="sched-counts">Type A: 0/4 &nbsp;|&nbsp; Type B: 0/4</p>
+      <div class="row g-2">
+        <div class="col-12 col-sm-auto">
+          <label class="form-label">Time</label>
+          <input type="time" id="new-sched-time" class="form-control">
+        </div>
+        <div class="col-12 col-sm-auto">
+          <label class="form-label">Type</label>
+          <select id="new-sched-type" class="form-select">
+            <option value="A">Type A</option>
+            <option value="B">Type B</option>
+            <option value="AB">Both (A + B)</option>
+          </select>
+        </div>
+        <div class="col-12 col-sm-auto d-flex align-items-end">
+          <button class="btn btn-primary w-100" onclick="addSchedule()">Add</button>
+        </div>
+      </div>
+      <div id="warn-a" class="text-warning mt-2 mb-0" style="font-size:.9rem;display:none">Type A is at the daily limit (4/4).</div>
+      <div id="warn-b" class="text-warning mt-2 mb-0" style="font-size:.9rem;display:none">Type B is at the daily limit (4/4).</div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- ── DEMO CONTROL PANEL ── -->
+<div id="demo-panel">
+  <div class="d-flex align-items-center justify-content-between mb-2">
+    <span class="fw-semibold" style="color:#f1f5f9">🎛 Demo Controls</span>
+    <span id="demo-toggle" class="text-info" onclick="togglePanel()">[collapse]</span>
+  </div>
+  <div id="demo-controls" class="row g-3">
+
+    <div class="col-6 col-md-2">
+      <label>Device status</label>
+      <select id="ctrl-status" class="form-select form-select-sm" onchange="applyStatus()">
+        <option value="online">Online</option>
+        <option value="offline">Offline</option>
+      </select>
+    </div>
+
+    <div class="col-6 col-md-2">
+      <label>Storage A (0–4)</label>
+      <input type="range" id="ctrl-a" class="form-range" min="0" max="4" value="3" oninput="applyStorage()">
+      <span id="ctrl-a-val">3</span>
+    </div>
+
+    <div class="col-6 col-md-2">
+      <label>Storage B (0–4)</label>
+      <input type="range" id="ctrl-b" class="form-range" min="0" max="4" value="1" oninput="applyStorage()">
+      <span id="ctrl-b-val">1</span>
+    </div>
+
+    <div class="col-6 col-md-2">
+      <label>Temperature (°C)</label>
+      <input type="number" id="ctrl-temp" class="form-control form-control-sm" value="26.4" step="0.1" oninput="applyEnv()">
+    </div>
+
+    <div class="col-6 col-md-2">
+      <label>Humidity (%)</label>
+      <input type="number" id="ctrl-humi" class="form-control form-control-sm" value="62.1" step="0.1" oninput="applyEnv()">
+    </div>
+
+    <div class="col-6 col-md-2">
+      <label>Countdown</label>
+      <input type="text" id="ctrl-countdown" class="form-control form-control-sm" value="1H 25M" placeholder="e.g. 0H 30M or blank" oninput="applyCountdown()">
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ── Demo state ──────────────────────────────────────────────────────────────
+const state = {
+  online: true,
+  ip: '192.168.1.42',
+  storageA: 3,
+  storageB: 1,
+  temp: 26.4,
+  humi: 62.1,
+  countdown: '1H 25M',
+  schedules: [
+    { time: '08:00', type: 'A' },
+    { time: '13:00', type: 'AB' },
+    { time: '20:00', type: 'B' },
+  ]
+};
+
+// ── Page routing ────────────────────────────────────────────────────────────
+function showPage(name, linkEl) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active-page'));
+  if (linkEl) linkEl.classList.add('active-page');
+  renderSchedules();
+}
+
+// ── Storage ─────────────────────────────────────────────────────────────────
+function setStorage(key, count) {
+  const pct = Math.round(count / 4 * 100);
+  const color = count === 0 ? '#dc3545' : count <= 1 ? '#ffc107' : '#198754';
+  const textClass = count === 0 ? 'text-danger' : count <= 1 ? 'text-warning' : 'invisible';
+  const warnText = count === 0 ? 'Empty — please refill' : count <= 1 ? 'Low — refill soon' : '\u00a0';
+  document.getElementById('storage-count-' + key).textContent = count + ' / 4';
+  const bar = document.getElementById('storage-bar-' + key);
+  bar.style.width = pct + '%';
+  bar.style.backgroundColor = color;
+  const warn = document.getElementById('storage-warn-' + key);
+  warn.className = 'mt-1 ' + textClass;
+  warn.textContent = warnText;
+}
+
+function setOffline() {
+  ['a', 'b'].forEach(key => {
+    document.getElementById('storage-count-' + key).textContent = '- / 4';
+    const bar = document.getElementById('storage-bar-' + key);
+    bar.style.width = '0%';
+    bar.style.backgroundColor = '#6c757d';
+    const warn = document.getElementById('storage-warn-' + key);
+    warn.className = 'mt-1 invisible';
+    warn.textContent = '\u00a0';
+  });
+  document.getElementById('sensor-temp').textContent = '—';
+  document.getElementById('sensor-humi').textContent = '—';
+}
+
+// ── Status ───────────────────────────────────────────────────────────────────
+function setStatus(online, ip) {
+  document.getElementById('status-dot').style.background = online ? '#198754' : '#dc3545';
+  document.getElementById('status-text').textContent = online ? 'Online' : 'Offline';
+  document.getElementById('status-ip').textContent = online && ip ? ip : '';
+}
+
+// ── Sensor ───────────────────────────────────────────────────────────────────
+function setSensor(temp, humi) {
+  document.getElementById('sensor-temp').textContent = temp.toFixed(1) + '°C';
+  document.getElementById('sensor-humi').textContent = humi.toFixed(1) + '%';
+}
+
+// ── Countdown ────────────────────────────────────────────────────────────────
+function setCountdown(val) {
+  const badge = document.getElementById('countdown-badge');
+  if (val && val.trim()) {
+    document.getElementById('countdown-text').textContent = val.trim();
+    badge.style.display = '';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// ── Schedules ────────────────────────────────────────────────────────────────
+function typeLabel(t) {
+  return t === 'AB' ? 'A + B' : 'Type ' + t;
+}
+
+function renderSchedules() {
+  const scheds = state.schedules;
+
+  // Dashboard table
+  const dashTbody = document.getElementById('sched-tbody-dash');
+  if (scheds.length === 0) {
+    dashTbody.innerHTML = '<tr><td colspan="2" class="text-muted">No schedules set.</td></tr>';
+  } else {
+    dashTbody.innerHTML = scheds.map(s =>
+      `<tr><td>${s.time}</td><td>${typeLabel(s.type)}</td></tr>`
+    ).join('');
+  }
+
+  // Schedules page table
+  const mainTbody = document.getElementById('sched-tbody-main');
+  if (scheds.length === 0) {
+    mainTbody.innerHTML = '<tr><td colspan="4" class="text-muted">No schedules yet.</td></tr>';
+  } else {
+    mainTbody.innerHTML = scheds.map((s, i) =>
+      `<tr>
+        <td>${i + 1}</td>
+        <td>${s.time}</td>
+        <td>${typeLabel(s.type)}</td>
+        <td><button class="btn btn-sm btn-danger" onclick="deleteSchedule(${i})">Delete</button></td>
+      </tr>`
+    ).join('');
+  }
+
+  // Counts
+  const countA = scheds.filter(s => s.type === 'A' || s.type === 'AB').length;
+  const countB = scheds.filter(s => s.type === 'B' || s.type === 'AB').length;
+  document.getElementById('sched-counts').innerHTML = `Type A: ${countA}/4 &nbsp;|&nbsp; Type B: ${countB}/4`;
+
+  // Type dropdown — hide maxed options
+  const sel = document.getElementById('new-sched-type');
+  sel.querySelector('option[value="A"]').hidden = countA >= 4;
+  sel.querySelector('option[value="B"]').hidden = countB >= 4;
+  sel.querySelector('option[value="AB"]').hidden = countA >= 4 || countB >= 4;
+  // Reset selection if current option hidden
+  if (sel.selectedOptions[0].hidden) {
+    const first = [...sel.options].find(o => !o.hidden);
+    if (first) sel.value = first.value;
+  }
+
+  // Warnings
+  document.getElementById('warn-a').style.display = countA >= 4 ? '' : 'none';
+  document.getElementById('warn-b').style.display = countB >= 4 ? '' : 'none';
+
+  const bothMax = countA >= 4 && countB >= 4;
+  document.getElementById('add-sched-form').style.display = bothMax ? 'none' : '';
+  document.getElementById('sched-limit-msg').style.display = bothMax ? '' : 'none';
+}
+
+function addSchedule() {
+  const time = document.getElementById('new-sched-time').value;
+  const type = document.getElementById('new-sched-type').value;
+  if (!time) { alert('Please select a time.'); return; }
+  state.schedules.push({ time, type });
+  state.schedules.sort((a, b) => a.time.localeCompare(b.time));
+  document.getElementById('new-sched-time').value = '';
+  renderSchedules();
+}
+
+function deleteSchedule(i) {
+  if (!confirm('Delete this schedule?')) return;
+  state.schedules.splice(i, 1);
+  renderSchedules();
+}
+
+// ── Dispense (demo) ──────────────────────────────────────────────────────────
+function demoDispense(type, mode) {
+  const label = mode === 'manual' ? 'Manual dispense' : 'Dispense';
+  if (!confirm(label + ' type ' + type + '?')) return;
+  alert('✅ Dispense command sent for type ' + type + ' (' + mode + ')');
+  // Decrement storage visually
+  if ((type === 'A' || type === 'AB') && state.storageA > 0) {
+    state.storageA--;
+    document.getElementById('ctrl-a').value = state.storageA;
+    document.getElementById('ctrl-a-val').textContent = state.storageA;
+  }
+  if ((type === 'B' || type === 'AB') && state.storageB > 0) {
+    state.storageB--;
+    document.getElementById('ctrl-b').value = state.storageB;
+    document.getElementById('ctrl-b-val').textContent = state.storageB;
+  }
+  applyAll();
+}
+
+// ── Demo panel controls ──────────────────────────────────────────────────────
+function applyStatus() {
+  state.online = document.getElementById('ctrl-status').value === 'online';
+  applyAll();
+}
+function applyStorage() {
+  state.storageA = parseInt(document.getElementById('ctrl-a').value);
+  state.storageB = parseInt(document.getElementById('ctrl-b').value);
+  document.getElementById('ctrl-a-val').textContent = state.storageA;
+  document.getElementById('ctrl-b-val').textContent = state.storageB;
+  applyAll();
+}
+function applyEnv() {
+  state.temp = parseFloat(document.getElementById('ctrl-temp').value) || 0;
+  state.humi = parseFloat(document.getElementById('ctrl-humi').value) || 0;
+  applyAll();
+}
+function applyCountdown() {
+  state.countdown = document.getElementById('ctrl-countdown').value;
+  setCountdown(state.countdown);
+}
+function applyAll() {
+  setStatus(state.online, state.ip);
+  if (state.online) {
+    setStorage('a', state.storageA);
+    setStorage('b', state.storageB);
+    setSensor(state.temp, state.humi);
+  } else {
+    setOffline();
+  }
+  setCountdown(state.countdown);
+}
+
+function togglePanel() {
+  const ctrl = document.getElementById('demo-controls');
+  const tog = document.getElementById('demo-toggle');
+  if (ctrl.style.display === 'none') {
+    ctrl.style.display = '';
+    tog.textContent = '[collapse]';
+    document.body.style.paddingBottom = '160px';
+  } else {
+    ctrl.style.display = 'none';
+    tog.textContent = '[expand]';
+    document.body.style.paddingBottom = '48px';
+  }
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+renderSchedules();
+applyAll();
+</script>
+</body>
+</html>
