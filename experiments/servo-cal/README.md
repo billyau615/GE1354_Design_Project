@@ -63,11 +63,11 @@ For each wheel, try different `us` values until the slot aligns with the dispens
 
 | Slot | Wheel A (µs) | Wheel B (µs) |
 |---|---|---|
-| 0 | | |
-| 1 | | |
-| 2 | | |
-| 3 | | |
-| 4 | | |
+| 0 | 500| 500|
+| 1 | 900| 970|
+| 2 | 1400| 1450|
+| 3 | 1900| 1970|
+| 4 | 2400| 2450|
 
 Fill in the table above as you find each value. Once complete, update `HOME_US`, `STEP_US` in the main project (`microbit/main/mb2/main.py`) — or switch to per-slot lookup tables if the spacing is non-uniform.
 
