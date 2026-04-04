@@ -115,7 +115,7 @@
     <p class="section-title d-flex flex-wrap align-items-center gap-2">
       Environment
       <span class="fw-normal" style="text-transform:none;letter-spacing:0;font-size:.75rem;color:#9ca3af" id="sensor-updated">
-        Last updated: 14:23:05
+        Last updated: Apr 02, 2026 14:23:05
       </span>
     </p>
     <div class="row g-3 mb-4">
@@ -350,7 +350,7 @@ function setStatus(online, ip) {
 // ── Sensor ───────────────────────────────────────────────────────────────────
 function setSensor(temp, humi) {
   document.getElementById('sensor-temp').textContent = temp.toFixed(1) + '°C';
-  document.getElementById('sensor-humi').textContent = humi.toFixed(1) + '%';
+  document.getElementById('sensor-humi').textContent = humi >= 100 ? '100%' : humi.toFixed(1) + '%';
 }
 
 // ── Countdown ────────────────────────────────────────────────────────────────
