@@ -1,3 +1,4 @@
+# AI
 from microbit import i2c
 
 DS3231_ADDR = 0x68

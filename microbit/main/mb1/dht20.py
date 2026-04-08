@@ -1,3 +1,4 @@
+# AI
 from microbit import i2c, sleep
 
 DHT20_ADDR = 0x38

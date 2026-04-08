@@ -5,11 +5,13 @@ from oled import init_oled, write_oled, write_oled_large, clear_oled
 from dht20 import read_dht20
 from ds3231 import read_ds3231, set_ds3231
 
+# Init
 radio.on()
 radio.config(group=42)
 uart.init(baudrate=9600, tx=pin16, rx=pin8)
 music.set_tempo(bpm=114, ticks=16)
 
+# NGGYU == Never Gonna Give You Up ;) Gotcha!
 RICKROLL = [
     "G4:4","A4:4","C5:4","A4:4",
     "E5:10","R:2","E5:10","R:2","D5:20","R:4",
@@ -20,11 +22,12 @@ RICKROLL = [
     "G4:8","D5:16","C5:24",
 ]
 
+# set variables
 h = 0; m = 0; s = 0
 schedules = []
 storage_a = 4
 storage_b = 4
-dispensed_this_minute = False
+drop_meds_soon = False
 sensor_timer = 0
 last_humi = None
 last_temp = None
@@ -160,12 +163,12 @@ def do_dispense_manual(type_str):
         send_uart("DISPENSE_DONE:B")
 
 def check_schedules():
-    global dispensed_this_minute
-    if dispensed_this_minute:
+    global drop_meds_soon
+    if drop_meds_soon:
         return
     for (sh, sm, type_str) in schedules:
         if sh == h and sm == m:
-            dispensed_this_minute = True
+            drop_meds_soon = True
             do_dispense(type_str)
             break
 
@@ -359,7 +362,7 @@ while True:
         if rh is not None:
             h, m, s = rh, rm, rs
             if m != prev_m:
-                dispensed_this_minute = False
+                drop_meds_soon = False
                 prev_m = m
             check_schedules()
         sensor_timer -= 1

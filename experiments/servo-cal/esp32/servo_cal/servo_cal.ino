@@ -17,12 +17,12 @@
 #include <ArduinoJson.h>
 
 // ── Configuration ─────────────────────────────────────────────────────────────
-const char* WIFI_SSID = "";   // fill in
-const char* WIFI_PASS = "";   // fill in
-const char* MQTT_HOST = "";   // fill in (e.g. "192.168.1.100")
+const char* WIFI_SSID = "YOUR_WIFI_SSID";   // fill in
+const char* WIFI_PASS = "YOUR_WIFI_PASSWORD";   // fill in
+const char* MQTT_HOST = "YOUR_MQTT_HOST";   // fill in (e.g. "192.168.1.100")
 const int   MQTT_PORT = 1883;
-const char* MQTT_USER = "";   // fill in
-const char* MQTT_PASS = "";   // fill in
+const char* MQTT_USER = "YOUR_MQTT_USER";   // fill in
+const char* MQTT_PASS = "YOUR_MQTT_PASSWORD";   // fill in
 
 #define MB_RX_PIN 17
 #define MB_TX_PIN 16

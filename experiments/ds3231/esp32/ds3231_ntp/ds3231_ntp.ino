@@ -11,8 +11,8 @@
 #include <time.h>
 
 // ── Configuration ─────────────────────────────────────────────────────────────
-const char* WIFI_SSID  = "";        // fill in
-const char* WIFI_PASS  = "";        // fill in
+const char* WIFI_SSID  = "YOUR_WIFI_SSID";        // fill in
+const char* WIFI_PASS  = "YOUR_WIFI_PASSWORD";        // fill in
 const long  GMT_OFFSET = 8 * 3600; // UTC+8 Hong Kong
 const int   DST_OFFSET = 0;
 
