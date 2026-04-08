@@ -6,12 +6,12 @@ radio.on()
 radio.config(group=42)
 
 # set PWM servo positions 
-SLOTS_A = [500, 900, 1400, 1900, 2400]
-SLOTS_B = [500, 970, 1450, 1970, 2450]
-MAX_SLOTS = 4
-PERIOD_US = 20000
+SLOTS_A=[500, 900, 1400, 1900, 2400]
+SLOTS_B=  [500, 970, 1450, 1970, 2450]
+MAX_SLOTS=4
+PERIOD_US=20000
 
-# set initial slot count
+#set initial slot count
 
 slot_a = 0
 slot_b = 0
