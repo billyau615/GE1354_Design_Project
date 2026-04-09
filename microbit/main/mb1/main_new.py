@@ -41,28 +41,8 @@ def send_uart(msg):
     uart.write(msg + "\n")
 
 
-def parse_sched_line(line):
-    global schedules
-    main = line[6:]
-    schedules = []
-    for part in main.split(","):
-        part = part.strip()
-        i = part.rfind(":")
-        if i < 3:
-            continue
-        time_str = part[:i]
-        type_str = part[i + 1:]
-        if len(time_str) == 5 and time_str[2] == ":":
-            try:
-                sh = int(time_str[0:2])
-                sm = int(time_str[3:5])
-                schedules.append((sh, sm, type_str))
-            except ValueError:
-                pass
-
-
 def parse_uart_line(line):
-    global h, m, s, storage_a, storage_b
+    global h, m, s, storage_a, storage_b, schedules
     # time sync from ESP32
     if line.startswith("TIME:"):
         time = line[5:]
@@ -77,7 +57,22 @@ def parse_uart_line(line):
                 pass
     # schedule list from ESP32
     elif line.startswith("SCHED:"):
-        parse_sched_line(line)
+        main = line[6:]
+        schedules = []
+        for part in main.split(","):
+            part = part.strip()
+            i = part.rfind(":")
+            if i < 3:
+                continue
+            time_str = part[:i]
+            type_str = part[i + 1:]
+            if len(time_str) == 5 and time_str[2] == ":":
+                try:
+                    sh = int(time_str[0:2])
+                    sm = int(time_str[3:5])
+                    schedules.append((sh, sm, type_str))
+                except ValueError:
+                    pass
     # storage count sync from server (via ESP32)
     elif line.startswith("STORAGE_SET:"):
         storage = line[12:]
@@ -365,7 +360,7 @@ for _ in range(300):
                 line = uart_buf[:i].decode("utf-8", "replace").strip()
                 uart_buf = uart_buf[i + 1:]
                 if line.startswith("SCHED:"):
-                    parse_sched_line(line)
+                    parse_uart_line(line)
                     break
     sleep(10)
 
