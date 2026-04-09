@@ -38,6 +38,7 @@ b_pressed_count = 0
 
 
 def send_uart(msg):
+    # for convenience, we make the function to send message via UART
     uart.write(msg + "\n")
 
 
@@ -404,7 +405,7 @@ while True:
             h, m, s = rh, rm, rs
             if m != prev_m:
                 drop_meds_soon = False  # reset dispense flag on new minute
-                prev_m = m
+                prev_m = m 
             check_schedules()
         # read sensors every 15 seconds
         sensor_timer = sensor_timer - 1
