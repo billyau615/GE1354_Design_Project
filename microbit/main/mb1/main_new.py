@@ -33,8 +33,8 @@ last_humi = None
 last_temp = None
 uart_buf = b''
 prev_m = -1
-a_pressed_since = 0
-b_pressed_since = 0
+a_pressed_count = 0
+b_pressed_count = 0
 
 
 def send_uart(msg):
@@ -44,10 +44,10 @@ def send_uart(msg):
 def parse_uart_line(line):
     global h, m, s, storage_a, storage_b, schedules
     # time sync from ESP32
-    if line.startswith("TIME:"):
-        time = line[5:]
-        if len(time) == 8 and time[2] == ":" and time[5] == ":":
-            try:
+    if line.startswith("TIME:"):    # find out the line start with 
+        time = line[5:] #extract the string 
+        if len(time) == 8 and time[2] == ":" and time[5] == ":": #check whether the format is correct 
+            try:    #if correct, extract corresponding values, and configure the rtc module
                 h = int(time[0:2])
                 m = int(time[3:5])
                 s = int(time[6:8])
@@ -204,7 +204,7 @@ def compute_countdown():
 
 
 def fmt_12h():
-    hh = h % 12
+    hh = h % 12             #covert to 12-hour format
     if hh == 0:
         hh = 12
     suffix = "PM" if h >= 12 else "AM"
@@ -213,7 +213,7 @@ def fmt_12h():
 
 def read_sensors():
     global last_humi, last_temp
-    humi, temp = read_dht20()
+    humi, temp = read_dht20()   #read temperature and humidity from sensor
     if humi is not None:
         last_humi = humi
         last_temp = temp
@@ -295,21 +295,21 @@ def enter_refill_mode(type_str):
 
 def check_long_press():
     # trigger refill mode on 2-second hold of button A or B
-    global a_pressed_since, b_pressed_since
+    global a_pressed_count, b_pressed_count
     if button_a.is_pressed():
-        a_pressed_since = a_pressed_since + 1
-        if a_pressed_since == 2:
+        a_pressed_count = a_pressed_count + 1
+        if a_pressed_count == 2:
             enter_refill_mode("A")
-            a_pressed_since = 0
+            a_pressed_count = 0
     else:
-        a_pressed_since = 0
+        a_pressed_count = 0
     if button_b.is_pressed():
-        b_pressed_since = b_pressed_since + 1
-        if b_pressed_since == 2:
+        b_pressed_count = b_pressed_count + 1
+        if b_pressed_count == 2:
             enter_refill_mode("B")
-            b_pressed_since = 0
+            b_pressed_count = 0
     else:
-        b_pressed_since = 0
+        b_pressed_count = 0
 
 
 # ── Boot sequence ─────────────────────────────────────────────────────────────
