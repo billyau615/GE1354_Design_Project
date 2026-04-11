@@ -96,12 +96,12 @@ def parse_uart_line(line):
 def read_uart():
     global uart_buf
     while uart.any():
-        chunk = uart.read(1)
+        chunk = uart.read(1)  #read 1 byte from UART buffer
         if chunk:
-            uart_buf = uart_buf + chunk
+            uart_buf = uart_buf + chunk #add up bytes until we getting full line
             if b"\n" in uart_buf:
                 i = uart_buf.find(b"\n")
-                line = uart_buf[:i].decode("utf-8", "replace").strip()
+                line = uart_buf[:i].decode("utf-8", "replace").strip()  #convert bytes to string, remove whitespace
                 uart_buf = uart_buf[i + 1:]
                 if line:
                     parse_uart_line(line)
@@ -149,7 +149,7 @@ def do_dispense(type_str):
         if storage_b == 0:
             empty_flag = empty_flag + ":EMPTY_B"
 
-    send_uart("STORAGE:{},{}{}".format(storage_a, storage_b, empty_flag))
+    send_uart("STORAGE:{},{}{}".format(storage_a, storage_b, empty_flag)) #send storage update to ESP32
     send_uart("DISPENSE_DONE:" + type_str)
     update_oled()
 
@@ -160,7 +160,7 @@ def do_dispense_manual(type_str):
     type_str = type_str.strip()
     if type_str == "A":
         if storage_a == 0:
-            send_uart("STORAGE:0,{}:EMPTY_A".format(storage_b))
+            send_uart("STORAGE:0,{}:EMPTY_A".format(storage_b)) 
             return
         radio.send("DISPENSE:A")
         storage_a = storage_a - 1
@@ -178,12 +178,12 @@ def do_dispense_manual(type_str):
         send_uart("DISPENSE_DONE:B")
 
 
-def check_schedules():
+def check_schedules(): 
     global drop_meds_soon
     if drop_meds_soon:
         return
     for (sh, sm, type_str) in schedules:
-        if sh == h and sm == m:
+        if sh == h and sm == m: #check if current time matches any schedule, if yes, it trigger dispense
             drop_meds_soon = True
             do_dispense(type_str)
             break
@@ -271,8 +271,8 @@ def enter_refill_mode(type_str):
     display.show(str(slot_count))
     # each button press loads one pill and advances the wheel one slot
     while slot_count < 4:
-        if type_str == "A":
-            pressed = button_a.was_pressed()
+        if type_str == "A": 
+            pressed = button_a.was_pressed() #count button A presses for type A refill,
             exit_pressed = button_b.was_pressed()
         else:
             pressed = button_b.was_pressed()
